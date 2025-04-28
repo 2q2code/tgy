@@ -4,6 +4,8 @@
 ;* Same as Red Brick 50A but with reversed A and C *
 ;***************************************************
 
+#include "macro_fix.inc"
+
 .equ	F_CPU		= 16000000
 .equ	USE_INT0	= 1
 .equ	USE_I2C		= 0

@@ -4,6 +4,8 @@
 ;* On birdie they are lfuse:0xbf hfuse:0xc1 *
 ;********************************************
 
+#include "macro_fix.inc"
+
 .equ	F_CPU		= 16000000
 .equ	USE_INT0	= 0
 .equ	USE_INT0S	= 2
@@ -69,12 +71,3 @@
 
 .equ	INIT_PB		= 0
 .equ	DIR_PB		= 0
-
-.MACRO RED_on
-.ENDMACRO
-.MACRO RED_off
-.ENDMACRO
-.MACRO GRN_on
-.ENDMACRO
-.MACRO GRN_off
-.ENDMACRO

@@ -5,6 +5,8 @@
 ;* Fuses should be lfuse=0x3f hfuse=0xca       *
 ;***********************************************
 
+#include "macro_fix.inc"
+
 .equ	F_CPU		= 16000000
 .equ	USE_INT0	= 0
 .equ	USE_I2C		= 1

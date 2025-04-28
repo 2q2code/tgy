@@ -4,6 +4,8 @@
 ;* Same as hk200a but with reversed C and A *
 ;********************************************
 
+#include "macro_fix.inc"
+
 .equ	F_CPU		= 16000000
 .equ	USE_INT0	= 1
 .equ	USE_I2C		= 0

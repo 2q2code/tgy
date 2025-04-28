@@ -7,6 +7,8 @@
 ;* Original fuses are lfuse:0x9f hfuse:0xc9                *
 ;***********************************************************
 
+#include "macro_fix.inc"
+
 .equ	F_CPU		= 16000000
 .equ	USE_INT0	= 2
 .equ	USE_I2C		= 0

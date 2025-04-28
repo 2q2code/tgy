@@ -5,6 +5,8 @@
 ;* Also new blue HK SS 190-200A boards      *
 ;********************************************
 
+#include "macro_fix.inc"
+
 .equ    F_CPU           = 16000000
 .equ    USE_INT0        = 1
 .equ    USE_I2C         = 0

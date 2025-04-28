@@ -3,6 +3,8 @@
 ;* Same pinout as Pulso Advance Plus DLU40A but at 12MHz   *
 ;***********************************************************
 
+#include "macro_fix.inc"
+
 .equ	F_CPU		= 12000000
 .equ	USE_INT0	= 2
 .equ	USE_I2C		= 0

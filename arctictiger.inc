@@ -4,6 +4,8 @@
 ;* 2013-07-09              *
 ;***************************
 
+#include "macro_fix.inc"
+
 .equ	F_CPU		= 16000000
 .equ	USE_INT0	= 0
 .equ	USE_I2C		= 0

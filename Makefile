@@ -5,7 +5,7 @@ SHELL = /bin/bash
 
 .SUFFIXES: .inc .hex
 
-ALL_TARGETS = afro.hex afro2.hex afro_hv.hex afro_nfet.hex arctictiger.hex birdie70a.hex blueesc.hex bs_nfet.hex bs.hex bs40a.hex dlu40a.hex dlux.hex hk200a.hex hm135a.hex kda.hex mkblctrl1.hex rb50a.hex rb70a.hex rct50a.hex tbs.hex tp.hex tp_8khz.hex tp_i2c.hex tp_nfet.hex tp70a.hex tgy6a.hex tgy.hex
+ALL_TARGETS = afro.hex afro2.hex afro_hv.hex afro_nfet.hex arctictiger.hex birdie70a.hex blueesc.hex bs_nfet.hex bs.hex bs40a.hex dlu40a.hex dlux.hex hk200a.hex hm135a.hex kda.hex mkblctrl1.hex rb50a.hex rb70a.hex rct50a.hex tbs.hex tp.hex tp_8khz.hex tp_i2c.hex tp_nfet.hex tp70a.hex tgy6a.hex tgy.hex yellow_brick.hex
 AUX_TARGETS = diy0.hex
 
 MOTOR_ID?= 0	# MK-style I2C motor ID, or UART motor number

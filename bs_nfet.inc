@@ -6,6 +6,8 @@
 ;* https://github.com/sim-/tgy                                 *
 ;***************************************************************
 
+#include "macro_fix.inc"
+
 .equ	F_CPU		= 16000000
 .equ	USE_INT0	= 0
 .equ	USE_INT0S	= 1

@@ -5,6 +5,8 @@
 ;* If your pcb is blue, you probably need rb70a2.inc *
 ;*****************************************************
 
+#include "macro_fix.inc"
+
 .equ	F_CPU		= 16000000
 .equ	USE_INT0	= 1
 .equ	USE_I2C		= 0

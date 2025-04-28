@@ -1,16 +1,22 @@
 ;***********************************************************
-;* TowerPro 25A 2009+ "type 3" boards with inverted nFETs  *
-;* Phase A and B sense on ADC5, ADC4; based on tp-18a as   *
-;* modified by Eduardo Reginato Lavratti (agressiva)       *
+;* TowerPro 18A / Turnigy Plush 18A/25A "type 2" boards    *
+;* with pFETs on PORTD, nFETs on PORTB                     *
+;* based on tp-18a from Bernhard's 18a_tpro_ppm_r05.zip    *
+;* Mai.2007                                                *
+;* http://home.versanet.de/~b-konze/                       *
+;* http://home.versanet.de/~b-konze/blc_18a/blc_18a.htm    *
 ;***********************************************************
 
 #include "macro_fix.inc"
 
-.equ	F_CPU		= 16000000
+.set	F_CPU		= 16000000
 .equ	USE_INT0	= 1
 .equ	USE_I2C		= 0
 .equ	USE_UART	= 0
 .equ	USE_ICP		= 0
+
+.equ    DEAD_LOW_NS     = 450	; May work on some boards, but be careful!
+.equ    DEAD_HIGH_NS    = 8000
 
 ;*********************
 ; PORT D definitions *
@@ -38,11 +44,11 @@
 .equ	mux_b		= 4	; ADC4 phase input
 ;.equ			= 3	; ADC3
 ;.equ			= 2	; ADC2 (plush has something on here)
-.equ	mux_temperature	= 1	; ADC1 temperature input
-.equ	mux_voltage	= 0	; ADC0 voltage input (10k from Vbat, 976 to gnd, 10.55V in -> .936V at ADC0)
+;.equ	mux_temperature	= 1	; ADC1 temperature input
+.equ	mux_voltage	= 0	; ADC0 voltage input (47k from Vbat, 4k7 to gnd, 10.10V -> .918V at ADC0)
 
-.equ	O_POWER		= 625	; 10k
-.equ	O_GROUND	= 61	; 976
+.equ	O_POWER		= 470
+.equ	O_GROUND	= 47
 
 .equ	INIT_PC		= 0
 .equ	DIR_PC		= 0
@@ -59,7 +65,7 @@
 .equ	BnFET		= 1
 .equ	CnFET		= 0
 
-.equ	INIT_PB		= (1<<AnFET)+(1<<BnFET)+(1<<CnFET)
+.equ	INIT_PB		= 0
 .equ	DIR_PB		= (1<<AnFET)+(1<<BnFET)+(1<<CnFET)
 
 .equ	AnFET_port	= PORTB
