@@ -9,6 +9,7 @@
 .equ	USE_I2C		= 1
 .equ	USE_UART	= 1
 .equ	USE_ICP		= 1
+.equ	SIMPLE_I2C	= 1
 
 .equ	DEAD_LOW_NS	= 300
 .equ	DEAD_HIGH_NS	= 300
@@ -47,6 +48,8 @@
 
 .equ	O_POWER		= 180
 .equ	O_GROUND	= 33
+
+.equ	adc_refs	= (1<<REFS0)	; Need 5V ref. of temp. will overflow
 
 .equ	INIT_PC		= (1<<i2c_clk)+(1<<i2c_data)
 .equ	DIR_PC		= 0

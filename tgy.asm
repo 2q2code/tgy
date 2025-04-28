@@ -88,14 +88,12 @@
 #include "afro_hv.inc"		; AfroESC HV with drivers (ICP PWM, I2C, UART)
 #elif defined(afro_nfet_esc)
 #include "afro_nfet.inc"	; AfroESC 3 with all nFETs (ICP PWM, I2C, UART)
-#elif defined(afro_pr0_esc)
-#include "afro_pr0.inc"		; AfroESC prototype rev0 with NCP5911 (ICP PWM)
-#elif defined(afro_pr1_esc)
-#include "afro_pr1.inc"		; AfroESC prototype rev1 with NCP5911 (ICP PWM)
 #elif defined(arctictiger_esc)
 #include "arctictiger.inc"	; Arctic Tiger 30A ESC with all nFETs (ICP PWM)
 #elif defined(birdie70a_esc)
 #include "birdie70a.inc"	; Birdie 70A with all nFETs (INT0 PWM)
+#elif defined(blueesc_esc)
+#include "blueesc.inc"	; Blue Robotics BlueESC (ICP PWM, I2C)
 #elif defined(mkblctrl1_esc)
 #include "mkblctrl1.inc"	; MK BL-Ctrl v1.2 (ICP PWM, I2C, UART, high side PWM, sense hack)
 #elif defined(bs_esc)
@@ -110,34 +108,20 @@
 #include "dlux.inc"		; HobbyKing Dlux Turnigy ESC 20A
 #elif defined(diy0_esc)
 #include "diy0.inc"		; HobbyKing DIY Open ESC (unreleased rev 0)
-#elif defined(dys_nfet_esc)
-#include "dys_nfet.inc"		; DYS 30A ESC with all nFETs (ICP PWM, I2C, UART)
 #elif defined(hk200a_esc)
 #include "hk200a.inc"		; HobbyKing SS Series 190-200A with all nFETs (INT0 PWM)
 #elif defined(hm135a_esc)
 #include "hm135a.inc"		; Hacker/Jeti Master 135-O-F5B 135A inverted-PWM-opto (INT0 PWM)
-#elif defined(hxt200a_esc)
-#include "hxt200a.inc"		; HexTronik F3J HXT200A HV ESC (INT0 PWM, I2C, UART)
 #elif defined(kda_esc)
-#include "kda.inc"		; Keda/Multistar 12A, 20A, 30A (original) (inverted INT0 PWM)
-#elif defined(kda_8khz_esc)
-#include "kda_8khz.inc"		; Keda/Multistar 30A (early 2014) (inverted INT0 PWM)
-#elif defined(kda_nfet_esc)
-#include "kda_nfet.inc"		; Keda/Multistar 30A with all nFETs (inverted INT0 PWM)
-#elif defined(kda_nfet_ni_esc)
-#include "kda_nfet_ni.inc"	; Keda/Multistar/Sunrise ~30A with all nFETs (INT0 PWM)
+#include "kda.inc"		; Keda Model 12A - 30A (INT0 PWM)
 #elif defined(rb50a_esc)
 #include "rb50a.inc"		; Red Brick 50A with all nFETs (INT0 PWM)
 #elif defined(rb70a_esc)
 #include "rb70a.inc"		; Red Brick 70A with all nFETs (INT0 PWM)
-#elif defined(rb70a2_esc)
-#include "rb70a2.inc"		; Newer Red Brick 70A with blue pcb and all nFETs (INT0 PWM)
 #elif defined(rct50a_esc)
 #include "rct50a.inc"		; RCTimer 50A (MLF version) with all nFETs (INT0 PWM)
 #elif defined(tbs_esc)
 #include "tbs.inc"		; TBS 30A ESC (Team BlackSheep) with all nFETs (ICP PWM, UART)
-#elif defined(tbs_hv_esc)
-#include "tbs_hv.inc"		; TBS high voltage ESC (Team BlackSheep) with all nFETs (ICP PWM, UART)
 #elif defined(tp_esc)
 #include "tp.inc"		; TowerPro 25A/HobbyKing 18A "type 1" (INT0 PWM)
 #elif defined(tp_8khz_esc)
@@ -150,8 +134,6 @@
 #include "tp70a.inc"		; TowerPro 70A with BL8003 FET drivers (INT0 PWM)
 #elif defined(tgy6a_esc)
 #include "tgy6a.inc"		; Turnigy Plush 6A (INT0 PWM)
-#elif defined(tgy_8mhz_esc)
-#include "tgy_8mhz.inc"		; TowerPro/Turnigy Basic/Plush "type 2" w/8MHz oscillator (INT0 PWM)
 #elif defined(tgy_esc)
 #include "tgy.inc"		; TowerPro/Turnigy Basic/Plush "type 2" (INT0 PWM)
 #else
@@ -164,9 +146,7 @@
 .equ	BOOT_JUMP	= 1	; Jump to any boot loader when PWM input stays high
 .equ	BOOT_START	= THIRDBOOTSTART
 
-.if !defined(COMP_PWM)
 .equ	COMP_PWM	= 0	; During PWM off, switch high side on (unsafe on some boards!)
-.endif
 .if !defined(DEAD_LOW_NS)
 .equ	DEAD_LOW_NS	= 300	; Low-side dead time w/COMP_PWM (62.5ns steps @ 16MHz, max 2437ns)
 .equ	DEAD_HIGH_NS	= 300	; High-side dead time w/COMP_PWM (62.5ns steps @ 16MHz, max roughly PWM period)
@@ -178,18 +158,15 @@
 .equ	MOTOR_ADVANCE	= 18	; Degrees of timing advance (0 - 30, 30 meaning no delay)
 .endif
 .if !defined(TIMING_OFFSET)
-.equ	TIMING_OFFSET	= 0	; Motor timing offset in microseconds
+.equ	TIMING_OFFSET	= 0	; Degrees of timing offset in microseconds
 .endif
 .equ	MOTOR_BRAKE	= 0	; Enable brake during neutral/idle ("motor drag" brake)
 .equ	LOW_BRAKE	= 0	; Enable brake on very short RC pulse ("thumb" brake like on Airtronics XL2P)
-.if !defined(MOTOR_REVERSE)
 .equ	MOTOR_REVERSE	= 0	; Reverse normal commutation direction
-.endif
-.equ	RC_PULS_REVERSE	= 0	; Enable RC-car style forward/reverse throttle
-.equ	RC_CALIBRATION	= 1	; Support run-time calibration of min/max pulse lengths
-.equ	SLOW_THROTTLE	= 0	; Limit maximum throttle jump to try to prevent overcurrent
+.equ	RC_PULS_REVERSE	= 1	; Enable RC-car style forward/reverse throttle
+.equ	RC_CALIBRATION	= 0	; Support run-time calibration of min/max pulse lengths
+.equ	SLOW_THROTTLE	= 1	; Limit maximum throttle jump to try to prevent overcurrent
 .equ	BEACON		= 1	; Beep periodically when RC signal is lost
-.equ	BEACON_IDLE	= 0	; Beep periodically if idle for a long period
 .if !defined(CHECK_HARDWARE)
 .equ	CHECK_HARDWARE	= 0	; Check for correct pin configuration, sense inputs, and functioning MOSFETs
 .endif
@@ -200,24 +177,21 @@
 .equ	DEBUG_ADC_DUMP	= 0	; Output an endless loop of all ADC values (no normal operation)
 .equ	MOTOR_DEBUG	= 0	; Output sync pulses on MOSI or SCK, debug flag on MISO
 
-.equ	I2C_ADDR	= 0x50	; MK-style I2C address
-.equ	MOTOR_ID	= 1	; MK-style I2C motor ID, or UART motor number
+.equ	I2C_ADDR	= 0x29	; MK-style I2C address base minus MOTOR_ID
 
-.equ	RCP_TOT		= 2	; Number of 65536us periods before considering rc pulse lost
+.equ	RCP_TOT		= 16	; Number of 65536us periods before considering rc pulse lost
 
 ; These are now defaults which can be adjusted via throttle calibration
 ; (stick high, stick low, (stick neutral) at start).
 ; These might be a bit wide for most radios, but lines up with POWER_RANGE.
-.equ	STOP_RC_PULS	= 1060	; Stop motor at or below this pulse length
-.equ	FULL_RC_PULS	= 1860	; Full speed at or above this pulse length
+.equ	STOP_RC_PULS	= 1100	; Stop motor at or below this pulse length
+.equ	FULL_RC_PULS	= 1900	; Full speed at or above this pulse length
 .equ	MAX_RC_PULS	= 2400	; Throw away any pulses longer than this
-.equ	MIN_RC_PULS	= 768	; Throw away any pulses shorter than this
+.equ	MIN_RC_PULS	= 100	; Throw away any pulses shorter than this
 .equ	MID_RC_PULS	= (STOP_RC_PULS + FULL_RC_PULS) / 2	; Neutral when RC_PULS_REVERSE = 1
-.equ	RCP_ALIAS_SHIFT	= 3	; Enable 1/8th PWM input alias ("oneshot125")
-.equ	BEEP_RCP_ERROR	= 0	; Beep at stop if invalid PWM pulses were received
 
 .if	RC_PULS_REVERSE
-.equ	RCP_DEADBAND	= 50	; Do not start until this much above or below neutral
+.equ	RCP_DEADBAND	= 25	; Do not start until this much above or below neutral
 .equ	PROGRAM_RC_PULS	= (STOP_RC_PULS + FULL_RC_PULS * 3) / 4	; Normally 1660
 .else
 .equ	RCP_DEADBAND	= 0
@@ -241,7 +215,6 @@
 .endif
 
 .equ	MAX_POWER	= (POWER_RANGE-1)
-.equ	PWR_COOL_START	= (POWER_RANGE/24) ; Power limit while starting to reduce heating
 .equ	PWR_MIN_START	= (POWER_RANGE/6) ; Power limit while starting (to start)
 .equ	PWR_MAX_START	= (POWER_RANGE/4) ; Power limit while starting (if still not running)
 .equ	PWR_MAX_RPM1	= (POWER_RANGE/4) ; Power limit when running slower than TIMING_RANGE1
@@ -255,25 +228,14 @@
 .equ	TIMING_MIN	= 0x8000 ; 8192us per commutation
 .equ	TIMING_RANGE1	= 0x4000 ; 4096us per commutation
 .equ	TIMING_RANGE2	= 0x2000 ; 2048us per commutation
-.equ	TIMING_RANGE3	= 0x1000 ; 1024us per commutation
-.equ	TIMING_MAX	= 0x0080 ; 32us per commutation (312,500eRPM)
+.equ	TIMING_MAX	= 0x00e0 ; 56us per commutation
 
-.equ	TIMEOUT_START	= 48000	; Timeout per commutation for ZC during starting
-.if !defined(START_DELAY_US)
-.equ	START_DELAY_US	= 0	; Initial post-commutation wait during starting
-.endif
-.equ	START_DSTEP_US	= 8	; Microseconds per start delay step
-.equ	START_DELAY_INC	= 15	; Wait step count increase (wraps in a byte)
-.equ	START_MOD_INC	= 4	; Start power modulation step count increase (wraps in a byte)
-.equ	START_MOD_LIMIT	= 48	; Value at which power is reduced to avoid overheating
-.equ	START_FAIL_INC	= 16	; start_tries step count increase (wraps in a byte, upon which we disarm)
+.equ	timeoutSTART	= 48000 ; 48ms per commutation
+.equ	timeoutMIN	= 36000	; 36ms per commutation
 
 .equ	ENOUGH_GOODIES	= 12	; This many start cycles without timeout will transition to running mode
-.equ	ZC_CHECK_FAST	= 12	; Number of ZC check loops under which PWM noise should not matter
-.equ	ZC_CHECK_MAX	= POWER_RANGE / 32 ; Limit ZC checking to about 1/2 PWM interval
-.equ	ZC_CHECK_MIN	= 3
 
-.equ	T0CLK		= (1<<CS01)	; clk/8 == 2MHz
+.equ	T0CLK		= (1<<CS01)	; clk/8 == 2Mhz
 .equ	T1CLK		= (1<<CS10)+(USE_ICP<<ICES1)+(USE_ICP<<ICNC1)	; clk/1 == 16MHz
 .equ	T2CLK		= (1<<CS20)	; clk/1 == 16MHz
 
@@ -305,8 +267,10 @@
 .def	flags0		= r16	; state flags
 	.equ	OCT1_PENDING	= 0	; if set, output compare interrupt is pending
 	.equ	SET_DUTY	= 1	; if set when armed, set duty during evaluate_rc
-	.equ	RCP_ERROR	= 2	; if set, corrupted PWM input was seen
-	.equ	RCP_ALIAS	= 3	; if set, rc alias (shifted) range is active
+;	.equ	I_pFET_HIGH	= 2	; set if over-current detect
+;	.equ	GET_STATE	= 3	; set if state is to be send
+	.equ	COMP_PHASE_A	= 2	; next comparator multiplexer phase is A
+	.equ	COMP_PHASE_B	= 3	; next comparator multiplexer phase is B
 	.equ	EEPROM_RESET	= 4	; if set, reset EEPROM
 	.equ	EEPROM_WRITE	= 5	; if set, save settings to EEPROM
 	.equ	UART_SYNC	= 6	; if set, we are waiting for our serial throttle byte
@@ -325,9 +289,12 @@
 	.equ	B_FET		= 1	; if set, B FET is being PWMed
 	.equ	C_FET		= 2	; if set, C FET is being PWMed
 	.equ	ALL_FETS	= (1<<A_FET)+(1<<B_FET)+(1<<C_FET)
-	.equ	TIMING_FAST	= 6	; if set, timing fits in 16 bits
+	.equ	BLIND_WAIT	= 3	; ADC is busy so wait for ZC blindly
+	.equ	READ_ADC	= 4	; it's time to read temp. or voltage
+	.equ	ADC_VOLTAGE	= 5	; whether voltage or temp. is read next
+	.equ  ADC_CURRENT = 6 ; whether current is read instead of voltage/temp
 	.equ	SKIP_CPWM	= 7	; if set, skip complementary PWM (for short off period)
-;.def			= r19
+.def	read_state	= r19		; int0s communication state
 .def	i_temp1		= r20		; interrupt temporary
 .def	i_temp2		= r21		; interrupt temporary
 .def	temp3		= r22		; main temporary (L)
@@ -355,7 +322,6 @@ tcnt1x:		.byte	1	; 3rd byte of TCNT1
 pwm_on_ptr:	.byte	1	; Next PWM ON vector
 rct_boot:	.byte	1	; Counter which increments while rc_timeout is 0 to jump to boot loader
 rct_beacon:	.byte	1	; Counter which increments while rc_timeout is 0 to disarm and beep occasionally
-idle_beacon:	.byte	1	; Counter which increments while armed and idle to beep occasionally
 last_tcnt1_l:	.byte	1	; last timer1 value
 last_tcnt1_h:	.byte	1
 last_tcnt1_x:	.byte	1
@@ -368,10 +334,9 @@ timing_x:	.byte	1
 com_time_l:	.byte	1	; time of last commutation
 com_time_h:	.byte	1
 com_time_x:	.byte	1
-start_delay:	.byte	1	; delay count after starting commutations before checking back-EMF
-start_modulate:	.byte	1	; Start modulation counter (to reduce heating from PWR_MAX_START if stuck)
-start_fail:	.byte   1	; Number of start_modulate loops for eventual failure and disarm
-rcp_beep_count:	.byte	1	; Number of RC pulse error beeps
+wt_OCT1_tot_l:	.byte	1	; time for each startup commutation
+wt_OCT1_tot_h:	.byte	1
+wt_OCT1_tot_x:	.byte	1
 rc_duty_l:	.byte	1	; desired duty cycle
 rc_duty_h:	.byte	1
 fwd_scale_l:	.byte	1	; 16.16 multipliers to scale input RC pulse to POWER_RANGE
@@ -380,20 +345,21 @@ rev_scale_l:	.byte	1
 rev_scale_h:	.byte	1
 neutral_l:	.byte	1	; Offset for neutral throttle (in CPU_MHZ)
 neutral_h:	.byte	1
-.if RCP_DEADBAND && defined(RCP_ALIAS_SHIFT)
-deadband_l:	.byte	1	; Deadband scaled for possible input alias
-deadband_h:	.byte	1
-.endif
-.if LOW_BRAKE
-low_brake_l:	.byte	1	; Low brake position with deadband applied
-low_brake_h:	.byte	1
-.endif
 .if USE_I2C
 i2c_max_pwm:	.byte	1	; MaxPWM for MK (NOTE: 250 while stopped is magic and enables v2)
 i2c_rx_state:	.byte	1
 i2c_blc_offset:	.byte	1
+i2c_tx_cache:	.byte	1
 .endif
 motor_count:	.byte	1	; Motor number for serial control
+com_count_l:	.byte	1	; Commutations count since last serial read
+com_count_h:	.byte	1 ;
+adctemp_l:	.byte	1	; temp
+adctemp_h:	.byte	1 ;
+vbat_l:		.byte	1	; Voltage
+vbat_h:		.byte	1
+adccurr_l:  .byte 1 ; Current
+adccurr_h:  .byte 1
 brake_sub:	.byte	1	; Brake speed subtrahend (power of two)
 brake_want:	.byte	1	; Type of brake desired
 brake_active:	.byte	1	; Type of brake active
@@ -456,14 +422,14 @@ eeprom_end:	.byte	1
 		ijmp		; t2ovfl_int
 		rjmp rcp_int	; icp1_int
 		rjmp t1oca_int	; t1oca_int
-		reti		; t1ocb_int
+		rjmp t1ocb_int	; t1ocb_int
 		rjmp t1ovfl_int	; t1ovfl_int
 		reti		; t0ovfl_int
 		reti		; spi_int
 		rjmp urxc_int	; urxc
 		reti		; udre
 		reti		; utxc
-		reti		; adc_int
+		rjmp adc_int	; adc_int
 		reti		; eep_int
 		reti		; aci_int
 		rjmp i2c_int	; twi_int
@@ -496,7 +462,7 @@ eeprom_defaults_w:
 
 ; Smaller version for r24 and above, Z flag not reliable
 .macro adiwx
-	.if !(@2 & 0xff) || (@2) & ~0x3f
+	.if @2 > 63
 		adi2	@0, @1, @2
 	.else
 		adiw	@0, @2
@@ -566,7 +532,7 @@ eeprom_defaults_w:
 
 ; Smaller version for r24 and above, Z flag not reliable
 .macro sbiwx
-	.if !(@2 & 0xff) || (@2) & ~0x3f
+	.if @2 > 63
 		sbi2	@0, @1, @2
 	.else
 		sbiw	@0, @2
@@ -614,588 +580,110 @@ eeprom_defaults_w:
 	.endif
 .endmacro
 
-;-- LED macros -----------------------------------------------------------
-
-.if !defined(red_led)
-	.macro RED_on
-	.endmacro
-	.macro RED_off
-	.endmacro
-.endif
-
-.if !defined(green_led)
-	.macro GRN_on
-	.endmacro
-	.macro GRN_off
-	.endmacro
-.endif
-
-.if !defined(blue_led)
-	.macro BLUE_on
-	.endmacro
-	.macro BLUE_off
-	.endmacro
-.endif
-
 ;-- FET driving macros ---------------------------------------------------
 ; Careful: "if" conditions split over multiple lines (with backslashes)
 ; work with arva, but avrasm2.exe silently produces wrong results.
 
-.if !defined(HIGH_SIDE_PWM)
-.equ HIGH_SIDE_PWM = 0
-.endif
-
-.if defined(AnFET)
-; Traditional direct high and low side drive, inverted if INIT_Px is set.
-; Dead-time insertion is supported for COMP_PWM.
-
-	.equ CPWM_SOFT = COMP_PWM
-
-	.macro FET_on
-		.if (INIT_PB & ((@0 == PORTB) << @1)) | (INIT_PC & ((@0 == PORTC) << @1)) | (INIT_PD & ((@0 == PORTD) << @1))
+.macro FET_on
+.if (INIT_PB & ((@0 == PORTB) << @1)) | (INIT_PC & ((@0 == PORTC) << @1)) | (INIT_PD & ((@0 == PORTD) << @1))
 		cbi	@0, @1
-		.else
-		sbi	@0, @1
-		.endif
-	.endmacro
-
-	.macro FET_off
-		.if (INIT_PB & ((@0 == PORTB) << @1)) | (INIT_PC & ((@0 == PORTC) << @1)) | (INIT_PD & ((@0 == PORTD) << @1))
-		sbi	@0, @1
-		.else
-		cbi	@0, @1
-		.endif
-	.endmacro
-
-	.macro AnFET_on
-		FET_on	AnFET_port, AnFET
-	.endmacro
-	.macro AnFET_off
-		FET_off	AnFET_port, AnFET
-	.endmacro
-	.macro ApFET_on
-		FET_on	ApFET_port, ApFET
-	.endmacro
-	.macro ApFET_off
-		FET_off	ApFET_port, ApFET
-	.endmacro
-	.macro BnFET_on
-		FET_on	BnFET_port, BnFET
-	.endmacro
-	.macro BnFET_off
-		FET_off	BnFET_port, BnFET
-	.endmacro
-	.macro BpFET_on
-		FET_on	BpFET_port, BpFET
-	.endmacro
-	.macro BpFET_off
-		FET_off	BpFET_port, BpFET
-	.endmacro
-	.macro CnFET_on
-		FET_on	CnFET_port, CnFET
-	.endmacro
-	.macro CnFET_off
-		FET_off	CnFET_port, CnFET
-	.endmacro
-	.macro CpFET_on
-		FET_on	CpFET_port, CpFET
-	.endmacro
-	.macro CpFET_off
-		FET_off	CpFET_port, CpFET
-	.endmacro
-
-	.macro PWM_FOCUS_A_on
-		.if COMP_PWM
-		cpse	temp3, temp4
-		PWM_COMP_A_on
-		.endif
-	.endmacro
-	.macro PWM_FOCUS_A_off
-		.if COMP_PWM
-		in	temp3, PWM_COMP_A_PORT_in
-		PWM_COMP_A_off
-		in	temp4, PWM_COMP_A_PORT_in
-		.endif
-	.endmacro
-	.macro PWM_FOCUS_B_on
-		.if COMP_PWM
-		cpse	temp3, temp4
-		PWM_COMP_B_on
-		.endif
-	.endmacro
-	.macro PWM_FOCUS_B_off
-		.if COMP_PWM
-		in	temp3, PWM_COMP_B_PORT_in
-		PWM_COMP_B_off
-		in	temp4, PWM_COMP_B_PORT_in
-		.endif
-	.endmacro
-	.macro PWM_FOCUS_C_on
-		.if COMP_PWM
-		cpse	temp3, temp4
-		PWM_COMP_C_on
-		.endif
-	.endmacro
-	.macro PWM_FOCUS_C_off
-		.if COMP_PWM
-		in	temp3, PWM_COMP_C_PORT_in
-		PWM_COMP_C_off
-		in	temp4, PWM_COMP_C_PORT_in
-		.endif
-	.endmacro
-
-	; For PWM state mirroring in commutation routines
-	.if HIGH_SIDE_PWM
-		.equ	PWM_A_PORT_in = ApFET_port
-		.equ	PWM_B_PORT_in = BpFET_port
-		.equ	PWM_C_PORT_in = CpFET_port
-		.equ	PWM_COMP_A_PORT_in = AnFET_port
-		.equ	PWM_COMP_B_PORT_in = BnFET_port
-		.equ	PWM_COMP_C_PORT_in = CnFET_port
-	.else
-		.equ	PWM_A_PORT_in = AnFET_port
-		.equ	PWM_B_PORT_in = BnFET_port
-		.equ	PWM_C_PORT_in = CnFET_port
-		.equ	PWM_COMP_A_PORT_in = ApFET_port
-		.equ	PWM_COMP_B_PORT_in = BpFET_port
-		.equ	PWM_COMP_C_PORT_in = CpFET_port
-	.endif
-
-	.macro PWM_ALL_off
-		.if HIGH_SIDE_PWM
-		all_pFETs_off @0
-		.else
-		all_nFETs_off @0
-		.endif
-	.endmacro
-
-	.macro all_pFETs_off
-	.if ApFET_port != BpFET_port || ApFET_port != CpFET_port
-		ApFET_off
-		BpFET_off
-		CpFET_off
-	.else
-		in	@0, ApFET_port
-		.if (INIT_PB & ((ApFET_port == PORTB) << ApFET)) | (INIT_PC & ((ApFET_port == PORTC) << ApFET)) | (INIT_PD & ((ApFET_port == PORTD) << ApFET))
-		sbr	@0, (1<<ApFET)+(1<<BpFET)+(1<<CpFET)
-		.else
-		cbr	@0, (1<<ApFET)+(1<<BpFET)+(1<<CpFET)
-		.endif
-		out	ApFET_port, @0
-	.endif
-	.endmacro
-
-	.macro all_nFETs_off
-	.if AnFET_port != BnFET_port || AnFET_port != CnFET_port
-		AnFET_off
-		BnFET_off
-		CnFET_off
-	.else
-		in	@0, AnFET_port
-		.if (INIT_PB & ((AnFET_port == PORTB) << AnFET)) | (INIT_PC & ((AnFET_port == PORTC) << AnFET)) | (INIT_PD & ((AnFET_port == PORTD) << AnFET))
-		sbr	@0, (1<<AnFET)+(1<<BnFET)+(1<<CnFET)
-		.else
-		cbr	@0, (1<<AnFET)+(1<<BnFET)+(1<<CnFET)
-		.endif
-		out	AnFET_port, @0
-	.endif
-	.endmacro
-
-	.macro nFET_brake
-	.if AnFET_port != BnFET_port || AnFET_port != CnFET_port
-		AnFET_on
-		BnFET_on
-		CnFET_on
-	.else
-		in	@0, AnFET_port
-		.if (INIT_PB & ((AnFET_port == PORTB) << AnFET)) | (INIT_PC & ((AnFET_port == PORTC) << AnFET)) | (INIT_PD & ((AnFET_port == PORTD) << AnFET))
-		cbr	@0, (1<<AnFET)+(1<<BnFET)+(1<<CnFET)
-		.else
-		sbr	@0, (1<<AnFET)+(1<<BnFET)+(1<<CnFET)
-		.endif
-		out	AnFET_port, @0
-	.endif
-	.endmacro
-
-.elif defined(ENABLE_ALL)
-; Three logic level PWM/ENABLE-style driver, with diode emulation mode or
-; off state at the middle level on the PWM pin. This is accomplished by
-; setting a pull-up rather than drive high. With this method, every FET
-; toggle can be a single I/O instruction, rather than having to select
-; high or low in advance to toggling enable. The following macros are used:
-;
-; XnFET_on  -> cbi PWM_X_PORT, PWM_X (drain through ext pull-down)
-; XnFET_off -> sbi PWM_X_PORT, PWM_X (pull-up pin with ext pull-down)
-; XpFET_on  -> sbi PWM_X_DDR, PWM_X (drive-up pin)
-; XpFET_off -> cbi PWM_X_DDR, PWM_X (pull-up pin with ext pull-down)
-;
-; COMP_PWM on these is done in hardware rather than software, so we can
-; just toggle the PORT value after PWM_FOCUS sets DDR (output mode).
-; This results in the following macro arrangement:
-;
-; TRI	CPWM	HIGH_SIDE_PWM	: PWM ON	PWM OFF		PWM_X_PORT_in
-; 0	0	0		: XnFET_on	XnFET_off	XnFET_port
-; 0	0	1		: XpFET_on	XpFET_off	XpFET_port
-; 0	1	0		: XnFET_on	XnFET_off	XnFET_port
-; 0	1	1		: XpFET_on	XpFET_off	XpFET_port
-; 1	0	0		: XnFET_on	XnFET_off	PWM_X_PORT
-; 1	0	1		: XpFET_on	XpFET_off	PWM_X_DDR
-; 1	1	0		: XnFET_on	XnFET_off	PWM_X_PORT
-; 1	1	1		: XnFET_off	XnFET_on	PWM_X_PORT
-;
-; For the last case, PWM_X_off actually turns low side on which isn't how
-; we want to leave the phase after commutating. PWM_X_clear will take care
-; of this.
-;
-; We leave ENABLE high once initialized as some drivers will actually
-; shut down rather than just using the input as a logic gate.
-;
-; We prefer HIGH_SIDE_PWM as diode emulation mode in these drivers
-; typically allows active freewheeling only in this orientation.
-
-	.equ CPWM_SOFT = 0
-
-	.macro AnFET_on
-		cbi	PWM_A_PORT, PWM_A
-	.endmacro
-	.macro AnFET_off
-		sbi	PWM_A_PORT, PWM_A
-	.endmacro
-	.macro ApFET_on
-		sbi	PWM_A_DDR, PWM_A
-	.endmacro
-	.macro ApFET_off
-		cbi	PWM_A_DDR, PWM_A
-	.endmacro
-	.macro BnFET_on
-		cbi	PWM_B_PORT, PWM_B
-	.endmacro
-	.macro BnFET_off
-		sbi	PWM_B_PORT, PWM_B
-	.endmacro
-	.macro BpFET_on
-		sbi	PWM_B_DDR, PWM_B
-	.endmacro
-	.macro BpFET_off
-		cbi	PWM_B_DDR, PWM_B
-	.endmacro
-	.macro CnFET_on
-		cbi	PWM_C_PORT, PWM_C
-	.endmacro
-	.macro CnFET_off
-		sbi	PWM_C_PORT, PWM_C
-	.endmacro
-	.macro CpFET_on
-		sbi	PWM_C_DDR, PWM_C
-	.endmacro
-	.macro CpFET_off
-		cbi	PWM_C_DDR, PWM_C
-	.endmacro
-
-	.macro PWM_FOCUS_A_on
-		.if COMP_PWM
-		sbrc	flags1, POWER_ON
-		ApFET_on
-		.endif
-	.endmacro
-	.macro PWM_FOCUS_A_off
-		.if COMP_PWM
-		ApFET_off
-		.endif
-	.endmacro
-
-	.macro PWM_FOCUS_B_on
-		.if COMP_PWM
-		sbrc	flags1, POWER_ON
-		BpFET_on
-		.endif
-	.endmacro
-	.macro PWM_FOCUS_B_off
-		.if COMP_PWM
-		BpFET_off
-		.endif
-	.endmacro
-
-	.macro PWM_FOCUS_C_on
-		.if COMP_PWM
-		sbrc	flags1, POWER_ON
-		CpFET_on
-		.endif
-	.endmacro
-	.macro PWM_FOCUS_C_off
-		.if COMP_PWM
-		CpFET_off
-		.endif
-	.endmacro
-
-	; For PWM state mirroring in commutation routines
-	.if COMP_PWM || !HIGH_SIDE_PWM
-		.equ	PWM_A_PORT_in = PWM_A_PORT
-		.equ	PWM_B_PORT_in = PWM_B_PORT
-		.equ	PWM_C_PORT_in = PWM_C_PORT
-	.else
-		.equ	PWM_A_PORT_in = PWM_A_DDR
-		.equ	PWM_B_PORT_in = PWM_B_DDR
-		.equ	PWM_C_PORT_in = PWM_C_DDR
-	.endif
-
-	.macro PWM_ALL_off
-		all_nFETs_off @0
-	.endmacro
-
-	.macro all_pFETs_off
-		.if PWM_A_DDR != PWM_B_DDR || PWM_A_DDR != PWM_C_DDR
-			ApFET_off
-			BpFET_off
-			CpFET_off
-		.else
-			in	@0, PWM_A_DDR
-			cbr	@0, (1<<PWM_A)+(1<<PWM_B)+(1<<PWM_C)
-			out	PWM_A_DDR, @0
-		.endif
-	.endmacro
-
-	.macro all_nFETs_off
-		.if PWM_A_PORT != PWM_B_PORT || PWM_A_PORT != PWM_C_PORT
-			AnFET_off
-			BnFET_off
-			CnFET_off
-		.else
-			in	@0, PWM_A_PORT
-			sbr	@0, (1<<PWM_A)+(1<<PWM_B)+(1<<PWM_C)
-			out	PWM_A_PORT, @0
-		.endif
-	.endmacro
-
-	.macro nFET_brake
-		.if PWM_A_PORT != PWM_B_PORT || PWM_A_PORT != PWM_C_PORT
-			AnFET_on
-			BnFET_on
-			CnFET_on
-		.else
-			in	@0, PWM_A_PORT
-			cbr	@0, (1<<PWM_A)+(1<<PWM_B)+(1<<PWM_C)
-			out	PWM_A_PORT, @0
-		.endif
-	.endmacro
-
-.endif
-
-;-- Commutation drive macros ---------------------------------------------
-
-.if HIGH_SIDE_PWM
-	.macro COMMUTATE_A_on
-		AnFET_on
-	.endmacro
-	.macro COMMUTATE_A_off
-		AnFET_off
-	.endmacro
-	.macro COMMUTATE_B_on
-		BnFET_on
-	.endmacro
-	.macro COMMUTATE_B_off
-		BnFET_off
-	.endmacro
-	.macro COMMUTATE_C_on
-		CnFET_on
-	.endmacro
-	.macro COMMUTATE_C_off
-		CnFET_off
-	.endmacro
 .else
-	.macro COMMUTATE_A_on
-		ApFET_on
-	.endmacro
-	.macro COMMUTATE_A_off
-		ApFET_off
-	.endmacro
-	.macro COMMUTATE_B_on
-		BpFET_on
-	.endmacro
-	.macro COMMUTATE_B_off
-		BpFET_off
-	.endmacro
-	.macro COMMUTATE_C_on
-		CpFET_on
-	.endmacro
-	.macro COMMUTATE_C_off
-		CpFET_off
-	.endmacro
+		sbi	@0, @1
 .endif
-
-;-- PWM macros -----------------------------------------------------------
-
-.macro PWM_A_on
-	.if !defined(AnFET) && COMP_PWM && HIGH_SIDE_PWM
-		AnFET_off
-	.elif HIGH_SIDE_PWM
-		ApFET_on
-	.else
-		AnFET_on
-	.endif
-.endmacro
-.macro PWM_A_off
-	.if !defined(AnFET) && COMP_PWM && HIGH_SIDE_PWM
-		AnFET_on
-	.elif HIGH_SIDE_PWM
-		ApFET_off
-	.else
-		AnFET_off
-	.endif
-.endmacro
-.macro PWM_A_clear
-		in	temp1, PWM_A_PORT_in
-	.if !defined(AnFET) && COMP_PWM && HIGH_SIDE_PWM
-		AnFET_off
-	.elif HIGH_SIDE_PWM
-		ApFET_off
-	.else
-		AnFET_off
-	.endif
-		in	temp2, PWM_A_PORT_in
-.endmacro
-.macro PWM_A_copy
-		cpse	temp1, temp2
-	.if !defined(AnFET) && COMP_PWM && HIGH_SIDE_PWM
-		AnFET_on
-	.elif HIGH_SIDE_PWM
-		ApFET_on
-	.else
-		AnFET_on
-	.endif
 .endmacro
 
-.macro PWM_B_on
-	.if !defined(BnFET) && COMP_PWM && HIGH_SIDE_PWM
-		BnFET_off
-	.elif HIGH_SIDE_PWM
-		BpFET_on
-	.else
-		BnFET_on
-	.endif
-.endmacro
-.macro PWM_B_off
-	.if !defined(BnFET) && COMP_PWM && HIGH_SIDE_PWM
-		BnFET_on
-	.elif HIGH_SIDE_PWM
-		BpFET_off
-	.else
-		BnFET_off
-	.endif
-.endmacro
-.macro PWM_B_clear
-		in	temp1, PWM_B_PORT_in
-	.if !defined(BnFET) && COMP_PWM && HIGH_SIDE_PWM
-		BnFET_off
-	.elif HIGH_SIDE_PWM
-		BpFET_off
-	.else
-		BnFET_off
-	.endif
-		in	temp2, PWM_B_PORT_in
-.endmacro
-.macro PWM_B_copy
-		cpse	temp1, temp2
-	.if !defined(BnFET) && COMP_PWM && HIGH_SIDE_PWM
-		BnFET_on
-	.elif HIGH_SIDE_PWM
-		BpFET_on
-	.else
-		BnFET_on
-	.endif
-.endmacro
-
-.macro PWM_C_on
-	.if !defined(CnFET) && COMP_PWM && HIGH_SIDE_PWM
-		CnFET_off
-	.elif HIGH_SIDE_PWM
-		CpFET_on
-	.else
-		CnFET_on
-	.endif
-.endmacro
-.macro PWM_C_off
-	.if !defined(CnFET) && COMP_PWM && HIGH_SIDE_PWM
-		CnFET_on
-	.elif HIGH_SIDE_PWM
-		CpFET_off
-	.else
-		CnFET_off
-	.endif
-.endmacro
-.macro PWM_C_clear
-		in	temp1, PWM_C_PORT_in
-	.if !defined(CnFET) && COMP_PWM && HIGH_SIDE_PWM
-		CnFET_off
-	.elif HIGH_SIDE_PWM
-		CpFET_off
-	.else
-		CnFET_off
-	.endif
-		in	temp2, PWM_C_PORT_in
-.endmacro
-.macro PWM_C_copy
-		cpse	temp1, temp2
-	.if !defined(CnFET) && COMP_PWM && HIGH_SIDE_PWM
-		CnFET_on
-	.elif HIGH_SIDE_PWM
-		CpFET_on
-	.else
-		CnFET_on
-	.endif
-.endmacro
-
-;-- Complementary PWM macros ---------------------------------------------
-
-.if CPWM_SOFT
-	.macro PWM_COMP_A_on
-		.if HIGH_SIDE_PWM
-			AnFET_on
-		.else
-			ApFET_on
-		.endif
-	.endmacro
-
-	.macro PWM_COMP_A_off
-		.if HIGH_SIDE_PWM
-			AnFET_off
-		.else
-			ApFET_off
-		.endif
-	.endmacro
-
-	.macro PWM_COMP_B_on
-		.if HIGH_SIDE_PWM
-			BnFET_on
-		.else
-			BpFET_on
-		.endif
-	.endmacro
-
-	.macro PWM_COMP_B_off
-		.if HIGH_SIDE_PWM
-			BnFET_off
-		.else
-			BpFET_off
-		.endif
-	.endmacro
-
-	.macro PWM_COMP_C_on
-		.if HIGH_SIDE_PWM
-			CnFET_on
-		.else
-			CpFET_on
-		.endif
-	.endmacro
-
-	.macro PWM_COMP_C_off
-		.if HIGH_SIDE_PWM
-			CnFET_off
-		.else
-			CpFET_off
-		.endif
-	.endmacro
+.macro FET_off
+.if (INIT_PB & ((@0 == PORTB) << @1)) | (INIT_PC & ((@0 == PORTC) << @1)) | (INIT_PD & ((@0 == PORTD) << @1))
+		sbi	@0, @1
+.else
+		cbi	@0, @1
 .endif
+.endmacro
+
+.macro AnFET_on
+		FET_on	AnFET_port, AnFET
+.endmacro
+.macro AnFET_off
+		FET_off	AnFET_port, AnFET
+.endmacro
+.macro ApFET_on
+		FET_on	ApFET_port, ApFET
+.endmacro
+.macro ApFET_off
+		FET_off	ApFET_port, ApFET
+.endmacro
+.macro BnFET_on
+		FET_on	BnFET_port, BnFET
+.endmacro
+.macro BnFET_off
+		FET_off	BnFET_port, BnFET
+.endmacro
+.macro BpFET_on
+		FET_on	BpFET_port, BpFET
+.endmacro
+.macro BpFET_off
+		FET_off	BpFET_port, BpFET
+.endmacro
+.macro CnFET_on
+		FET_on	CnFET_port, CnFET
+.endmacro
+.macro CnFET_off
+		FET_off	CnFET_port, CnFET
+.endmacro
+.macro CpFET_on
+		FET_on	CpFET_port, CpFET
+.endmacro
+.macro CpFET_off
+		FET_off	CpFET_port, CpFET
+.endmacro
+
+.macro all_pFETs_off
+.if ApFET_port != BpFET_port || ApFET_port != CpFET_port
+		ApFET_off
+		BpFET_off
+		CpFET_off
+.else
+	        in      @0, ApFET_port
+	.if (INIT_PB & ((ApFET_port == PORTB) << ApFET)) | (INIT_PC & ((ApFET_port == PORTC) << ApFET)) | (INIT_PD & ((ApFET_port == PORTD) << ApFET))
+		sbr     @0, (1<<ApFET)+(1<<BpFET)+(1<<CpFET)
+	.else
+		cbr     @0, (1<<ApFET)+(1<<BpFET)+(1<<CpFET)
+	.endif
+		out     ApFET_port, @0
+.endif
+.endmacro
+
+.macro all_nFETs_off
+.if AnFET_port != BnFET_port || AnFET_port != CnFET_port
+		AnFET_off
+		BnFET_off
+		CnFET_off
+.else
+	        in      @0, AnFET_port
+	.if (INIT_PB & ((AnFET_port == PORTB) << AnFET)) | (INIT_PC & ((AnFET_port == PORTC) << AnFET)) | (INIT_PD & ((AnFET_port == PORTD) << AnFET))
+		sbr     @0, (1<<AnFET)+(1<<BnFET)+(1<<CnFET)
+	.else
+		cbr     @0, (1<<AnFET)+(1<<BnFET)+(1<<CnFET)
+	.endif
+		out     AnFET_port, @0
+.endif
+.endmacro
+
+.macro nFET_brake
+.if AnFET_port != BnFET_port || AnFET_port != CnFET_port
+		AnFET_on
+		BnFET_on
+		CnFET_on
+.else
+	        in      @0, AnFET_port
+	.if (INIT_PB & ((AnFET_port == PORTB) << AnFET)) | (INIT_PC & ((AnFET_port == PORTC) << AnFET)) | (INIT_PD & ((AnFET_port == PORTD) << AnFET))
+		cbr     @0, (1<<AnFET)+(1<<BnFET)+(1<<CnFET)
+	.else
+		sbr     @0, (1<<AnFET)+(1<<BnFET)+(1<<CnFET)
+	.endif
+		out     AnFET_port, @0
+.endif
+.endmacro
 
 ;-- RC pulse setup and edge handling macros ------------------------------
 
@@ -1218,7 +706,7 @@ eeprom_defaults_w:
 		ldi	@0, T1CLK & ~(1<<ICES1)
 		out	TCCR1B, @0
 .endmacro
-.elif USE_INT0
+.elif USE_INT0 || defined(USE_INT0S)
 .macro rcp_int_enable
 		ldi	@0, (1<<INT0)	; enable ext_int0
 		out	GICR, @0
@@ -1244,6 +732,16 @@ eeprom_defaults_w:
 		ldi	@0, (1<<ISC01)+(1<<ISC00)
 		out	MCUCR, @0	; set next int0 to rising edge
 .endmacro
+.elif USE_INT0S == 1
+.macro rcp_int_rising_edge
+		ldi	@0, (1<<ISC01)+(1<<ISC00)
+		out	MCUCR, @0	; set next int0 to rising edge
+.endmacro
+.elif USE_INT0S == 2
+.macro rcp_int_rising_edge
+		ldi	@0, (1<<ISC01)
+		out	MCUCR, @0	; set next int0 to falling edge
+.endmacro
 .endif
 .endif
 
@@ -1266,27 +764,13 @@ eeprom_defaults_w:
 	.endif
 .endmacro
 .macro comp_adc_enable
-		sbi	ADCSRA, ADEN	; Eisable ADC to effectively disable ACME
+		sbi	ADCSRA, ADEN	; Enable ADC to effectively disable ACME
 .endmacro
-.macro set_comp_phase_a
-	.if defined(mux_a)
-		ldi	@0, mux_a	; set comparator multiplexer to phase A
-		out	ADMUX, @0
-		comp_adc_disable
-	.else
-		comp_adc_enable
-	.endif
-.endmacro
-.macro set_comp_phase_b
-	.if defined(mux_b)
-		ldi	@0, mux_b	; set comparator multiplexer to phase B
-		out	ADMUX, @0
-		comp_adc_disable
-	.else
-		comp_adc_enable
-	.endif
-.endmacro
-.macro set_comp_phase_c
+.macro start_comp_phase
+		sbrc	flags0, COMP_PHASE_A
+		rjmp	phase_a
+		sbrc	flags0, COMP_PHASE_B
+		rjmp	phase_b
 	.if defined(mux_c)
 		ldi	@0, mux_c	; set comparator multiplexer to phase C
 		out	ADMUX, @0
@@ -1294,6 +778,35 @@ eeprom_defaults_w:
 	.else
 		comp_adc_enable
 	.endif
+		rjmp	start_comp_phase_done
+phase_a:
+	.if defined(mux_a)
+		ldi	@0, mux_a	; set comparator multiplexer to phase A
+		out	ADMUX, @0
+		comp_adc_disable
+	.else
+		comp_adc_enable
+	.endif
+		rjmp	start_comp_phase_done
+phase_b:
+	.if defined(mux_b)
+		ldi	@0, mux_b	; set comparator multiplexer to phase B
+		out	ADMUX, @0
+		comp_adc_disable
+	.else
+		comp_adc_enable
+	.endif
+start_comp_phase_done:
+.endmacro
+.macro set_comp_phase_a
+		sbr	flags0, (1<<COMP_PHASE_A)
+.endmacro
+.macro set_comp_phase_b
+		cbr	flags0, (1<<COMP_PHASE_A)
+		sbr	flags0, (1<<COMP_PHASE_B)
+.endmacro
+.macro set_comp_phase_c
+		cbr	flags0, (1<<COMP_PHASE_A)+(1<<COMP_PHASE_B)
 .endmacro
 
 ;-- Timing and motor debugging macros ------------------------------------
@@ -1421,7 +934,7 @@ pwm_brake_off:
 .endif
 
 pwm_on_fast_high:
-.if CPWM_SOFT && EXTRA_DEAD_TIME_HIGH > MAX_BUSY_WAIT_CYCLES
+.if COMP_PWM && EXTRA_DEAD_TIME_HIGH > MAX_BUSY_WAIT_CYCLES
 		in	i_sreg, SREG
 		dec	tcnt2h
 		brne	pwm_on_fast_high_again
@@ -1446,13 +959,13 @@ pwm_again:
 		reti
 
 pwm_on:
-.if CPWM_SOFT
+.if COMP_PWM
 		sbrc	flags2, A_FET
-		PWM_COMP_A_off
+		ApFET_off
 		sbrc	flags2, B_FET
-		PWM_COMP_B_off
+		BpFET_off
 		sbrc	flags2, C_FET
-		PWM_COMP_C_off
+		CpFET_off
 	.if EXTRA_DEAD_TIME_HIGH > MAX_BUSY_WAIT_CYCLES
 		; Reschedule to interrupt once the dead time has passed
 		.if high(EXTRA_DEAD_TIME_HIGH)
@@ -1475,11 +988,11 @@ pwm_on:
 .endif
 pwm_on_fast:
 		sbrc	flags2, A_FET
-		PWM_A_on
+		AnFET_on
 		sbrc	flags2, B_FET
-		PWM_B_on
+		BnFET_on
 		sbrc	flags2, C_FET
-		PWM_C_on
+		CnFET_on
 		ldi	ZL, pwm_off
 		mov	tcnt2h, duty_h
 		out	TCNT2, duty_l
@@ -1498,13 +1011,13 @@ pwm_off:
 		lds	ZL, pwm_on_ptr		; 2 cycles
 		mov	tcnt2h, off_duty_h	; 1 cycle
 		sbrc	flags2, A_FET		; 2 cycles if skip, 1 cycle otherwise
-		PWM_A_off			; 2 cycles (off at 12 cycles from entry)
+		AnFET_off			; 2 cycles (off at 12 cycles from entry)
 		sbrc	flags2, B_FET		; Offset by 2 cycles here,
-		PWM_B_off			; but still equal on-time
+		BnFET_off			; but still equal on-time
 		sbrc	flags2, C_FET
-		PWM_C_off
+		CnFET_off
 		out	TCNT2, off_duty_l	; 1 cycle
-		.if CPWM_SOFT
+		.if COMP_PWM
 		sbrc	flags2, SKIP_CPWM	; 2 cycles if skip, 1 cycle otherwise
 		reti
 		.if DEAD_TIME_LOW > 9
@@ -1515,11 +1028,11 @@ pwm_off:
 		cycle_delay EXTRA_DEAD_TIME_LOW - 2
 		.equ	CPWM_OVERHEAD_LOW = 9 + EXTRA_DEAD_TIME_LOW
 		sbrc	flags2, A_FET
-		PWM_COMP_A_on
+		ApFET_on
 		sbrc	flags2, B_FET
-		PWM_COMP_B_on
+		BpFET_on
 		sbrc	flags2, C_FET
-		PWM_COMP_C_on
+		CpFET_on
 		.endif
 		reti				; 4 cycles
 
@@ -1536,19 +1049,27 @@ t1oca_int:	in	i_sreg, SREG
 t1oca_int1:	sts	ocr1ax, i_temp1
 		out	SREG, i_sreg
 		reti
+
+t1ocb_int:
+	.if defined(USE_INT0S)
+		cbi	DDRB, 3				; MOSI as input
+		cbi	PORTB, 3			; No pull-up on MOSI
+		ldi	i_temp1, 100
+		mov	read_state, i_temp1
+	.endif
+		reti
 ;-----bko-----------------------------------------------------------------
 ; timer1 overflow interrupt (happens every 4096µs)
 t1ovfl_int:	in	i_sreg, SREG
 		lds	i_temp1, tcnt1x
 		inc	i_temp1
 		sts	tcnt1x, i_temp1
-		.if BEACON_IDLE
-		brne	t1ovfl_int0
-		lds	i_temp2, idle_beacon
-		inc	i_temp2
-		sts	idle_beacon, i_temp2
-t1ovfl_int0:
-		.endif
+		brne	timeout_check
+		;sbr	flags2, (1 << READ_ADC)		; Every 256 overflows
+timeout_check:	
+		andi  i_temp1, 127     ; Every 64 overflows
+		breq trigger_adc
+		lds i_temp1, tcnt1x
 		andi	i_temp1, 15			; Every 16 overflows
 		brne	t1ovfl_int1
 		tst	rc_timeout
@@ -1563,6 +1084,10 @@ t1ovfl_int2:	lds	i_temp1, rct_boot
 		inc	i_temp1
 		sts	rct_beacon, i_temp1
 		rjmp	t1ovfl_int1
+trigger_adc:
+		sbr	flags2, (1 << READ_ADC)
+		rjmp t1ovfl_int1
+
 ;-----bko-----------------------------------------------------------------
 ; NOTE: This interrupt uses the 16-bit atomic timer read/write register
 ; by reading TCNT1L and TCNT1H, so this interrupt must be disabled before
@@ -1602,7 +1127,7 @@ rising_edge:
 
 rcpint_fail:
 		in	i_sreg, SREG
-		sbr	flags0, (1<<RCP_ERROR)
+		clr	rc_timeout
 		rjmp	rcpint_exit
 
 falling_edge:
@@ -1624,27 +1149,137 @@ rcpint_exit:	rcp_int_rising_edge i_temp1	; Set next int to rising edge
 		out	SREG, i_sreg
 		reti
 	.endif
+;-------------------------------------------------------------------------
+; New bitbanging serial protocol that uses one interrupt per bit.  MOSI is
+; the bi-directional data line, RCP_IN is the (host-driven) clock line.
+; The first bit (direction bit) is always host to ESC.  A write operation
+; starts with the first bit set and the data bits following.  14 bits
+; received are the desired throttle level.  A read operation starts with
+; the direction bit clear followed by the address bit.  Currently the
+; 16-bit commutations counter can be read at address 0.  We could also return
+; the temperature and/or voltage later.  All bytes are xmitted MSB-first and
+; the address 1 reads return the constant 0x1234 so that host can test the
+; connection.
+;
+; With a single interrupt to handle all the receiving and sending we were
+; blocking the main program for too long and glitches were seen.
+; rx_l and rx_h are being abused as our state variable (read/write buffer).
+	.if defined(USE_INT0S)
+		in	i_sreg, SREG
+
+		inc	read_state
+		brpl	rcpint_last
+
+		; Read one bit, this is one of bits 13-1
+		lsl	rx_l
+		rol	rx_h
+		sbic	PINB, 3			; Skip if MOSI low
+		inc	rx_l
+
+		out	SREG, i_sreg
+		reti
+
+rcpint_last:	brne	rcpint_first		; Timed out, re-start
+
+		; Read the last bit, bit 0
+		lsl	rx_l
+		rol	rx_h
+		sbic	PINB, 3			; Skip if MOSI low
+		inc	rx_l
+
+		sbr	flags1, (1 << EVAL_RC) + (1 << UART_MODE)
+		ldi	i_temp1, 99
+		mov	read_state, i_temp1
+		out	SREG, i_sreg
+		reti
+
+send_continue:	sbrc	rx_h, 7
+		sbi	PORTB, 3		; Set MOSI
+		sbrs	rx_h, 7
+		cbi	PORTB, 3		; Clear MOSI
+		lsl	rx_l
+		rol	rx_h
+
+		out	SREG, i_sreg
+		reti
+
+rcpint_send:	cpi	read_state, 1
+		brne	send_continue
+
+rcpint_read_first:
+		; We're about to send the MSB, set everything up
+		sbic	PINB, 3			; Receive the "address" bit
+		rjmp	rcpint_read_high
+
+rcpint_read_low:
+		; Add an identification value 0x1234 to the commutation
+		; counter so that the host can use it at any time the motor
+		; is stopped to check if the ESC is alive and connected.
+		lds	rx_h, com_count_h
+		lds	rx_l, com_count_l
+		ldi2	temp1, temp2, 0x1234
+		sts	com_count_h, i_temp2
+		sts	com_count_l, i_temp1
+		sbi	DDRB, 3			; MOSI as OUTPUT
+		rjmp	send_continue
+
+rcpint_read_high:
+		lds	rx_h, vbat_h
+		lds	rx_l, vbat_l
+		sbi	DDRB, 3			; MOSI as OUTPUT
+		rjmp	send_continue
+
+rcpint_first:	cpi	read_state, 100
+		brlt	rcpint_send
+		breq	rcpint_nop
+
+		; Direction bit 0 indicates a read, 1 a write
+		; read_state is increased for every bit, negative means we're
+		; receiveing a bit written by host, >= 0 means we're
+		; sending a bit
+		ldi	i_temp1, -14		; Reset the bit counter
+		sbis	PINB, 3			; Receive the direction bit
+		ldi	i_temp1, 0		; Reset the bit counter
+		mov	read_state, i_temp1
+		clr	rx_l
+
+		in	i_temp1, TCNT1L		; get timer1 values
+		in	i_temp2, TCNT1H
+		adiwx	i_temp1, i_temp2, 1600	; Timeout in CPU cycles
+		out	OCR1BH, i_temp2
+		out	OCR1BL, i_temp1
+		ldi	i_temp1, (1 << OCF1B)	; Clear OCF1B flag
+		out	TIFR, i_temp1
+
+		cbr	flags1, (1 << EVAL_RC) + (1 << UART_MODE)
+
+		out	SREG, i_sreg
+		reti
+rcpint_nop:
+		dec	read_state
+		out	SREG, i_sreg
+		reti
+	.endif
 ;-----bko-----------------------------------------------------------------
 ; MK BL-Ctrl v1, v2 compatible input control
 ; Ctrl-click Settings in MKTool for reversing and additional settings
 i2c_int:
 	.if USE_I2C
+	.if !defined(SIMPLE_I2C)
 		in	i_sreg, SREG
 		in	i_temp1, TWSR
-		cpi	i_temp1, 0x60		; rx: received our SLA+W
-		breq	i2c_ack
 		cpi	i_temp1, 0x80		; rx: data available, previously ACKed
 		breq	i2c_rx_data
-		cpi	i_temp1, 0xa0		; rx: stop/restart condition (end of message)
-		breq	i2c_rx_stop
 		cpi	i_temp1, 0xa8		; tx: received our SLA+R
 		breq	i2c_tx_init
 		cpi	i_temp1, 0xb8		; tx: data request, previously ACKed
 		breq	i2c_tx_data
 		cpi	i_temp1, 0xf8		; tx: no relevant state information
-		breq	i2c_io_error
+		breq	i2c_nop
+		cpi	i_temp1, 0xb0		; same as 0xa8
+		breq	i2c_tx_init
 		cpse	i_temp1, ZH		; Bus error due to illegal start/stop condition
-		rjmp	i2c_ack			; 0x88, 0xc0, etc.: enable listening
+		rjmp	i2c_ack			; 0x60, 0x68, 0x88, 0xa0, 0xc0, etc.: enable listening
 i2c_io_error:	ldi	i_temp1, (1<<TWIE)|(1<<TWEN)|(1<<TWSTO)|(1<<TWEA)|(1<<TWINT)
 		rjmp	i2c_out
 
@@ -1680,7 +1315,7 @@ i2c_nack:	ldi	i_temp1, (1<<TWIE)|(1<<TWEN)|(1<<TWINT)
 		rjmp	i2c_out
 i2c_ack:	ldi	i_temp1, (1<<TWIE)|(1<<TWEN)|(1<<TWEA)|(1<<TWINT)
 i2c_out:	out	TWCR, i_temp1
-		out	SREG, i_sreg
+i2c_nop:	out	SREG, i_sreg
 		reti
 
 i2c_rx_stop:	lds	i_temp1, i2c_rx_state
@@ -1732,6 +1367,109 @@ i2c_rx_blccsum:	in	i_temp1, TWDR		; We can't do anything with the checksum, so j
 		sts	blc_setmask, i_temp2
 		sts	blc_checksum, i_temp1
 		rjmp	i2c_ack
+	.else
+	; A simple I2C protocol with telemetry feedback
+	; Our "register map" will be seen as follows:
+	;  0x00  (write-only)  Throttle high (MSB is the motor reverse bit)
+	;  0x01  (write-only)  Throttle low
+	;  0x02  (read-only)   Revolution counter high
+	;  0x03  (read-only)   Revolution counter low
+	;  0x04  (read-only)   Vbat high
+	;  0x05  (read-only)   Vbat low
+	;  0x06  (read-only)   Temperature high
+	;  0x07  (read-only)   Temperature low
+	;  0x08  (read-only)   Current high
+	;  0x09  (read-only)   Current low
+	;  0x0A  (read-only)   Identification (0xab)
+	; Address gets auto-incremented.
+	; TODO: expose O_GROUND, O_POWER, etc.?
+		in	i_sreg, SREG
+		in	i_temp1, TWSR
+		cpi	i_temp1, 0x60		; rx: received our SLA+W
+		breq	i2c_rx_start
+		cpi	i_temp1, 0x80		; rx: data available, previously ACKed
+		breq	i2c_rx_data
+		cpi	i_temp1, 0xa8		; tx: received our SLA+R
+		breq	i2c_tx_init
+		cpi	i_temp1, 0xb8		; tx: data request, previously ACKed
+		breq	i2c_tx_data
+		cpi	i_temp1, 0xf8		; tx: no relevant state information
+		breq	i2c_nop
+		cpi	i_temp1, 0x68		; same as 0x60
+		breq	i2c_rx_start
+		cpi	i_temp1, 0xb0		; same as 0xa8
+		breq	i2c_tx_init
+		cpse	i_temp1, ZH		; Bus error due to illegal start/stop condition
+		rjmp	i2c_ack			; 0x88, 0xa0, 0xc0, etc.: enable listening
+i2c_io_error:	ldi	i_temp1, (1<<TWIE)|(1<<TWEN)|(1<<TWSTO)|(1<<TWEA)|(1<<TWINT)
+		rjmp	i2c_out
+
+i2c_nack:	ldi	i_temp1, (1<<TWIE)|(1<<TWEN)|(1<<TWINT)
+		rjmp	i2c_out
+i2c_ack:	ldi	i_temp1, (1<<TWIE)|(1<<TWEN)|(1<<TWEA)|(1<<TWINT)
+i2c_out:	out	TWCR, i_temp1
+i2c_nop:	out	SREG, i_sreg
+		reti
+
+i2c_rx_start:	sts	i2c_rx_state, ZH
+		rjmp	i2c_ack
+
+i2c_rx_data:	lds	i_temp1, i2c_rx_state
+		in	i_temp2, TWDR
+		cpse	i_temp1, ZH		; Skip if address byte
+		rjmp	i2c_rx_value
+		sbr	i_temp2, 0x80		; Make it non-zero
+		sts	i2c_rx_state, i_temp2	; Save the address
+		rjmp	i2c_ack
+i2c_rx_value:	inc	i_temp1
+		sts	i2c_rx_state, i_temp1	; Save updated address
+		cpi	i_temp1, 0x81
+		breq	i2c_rx_hi
+		cpi	i_temp1, 0x82
+		breq	i2c_rx_lo
+		rjmp	i2c_ack			; Discard
+i2c_rx_hi:	mov	rx_h, i_temp2
+		rjmp	i2c_ack
+i2c_rx_lo:	mov	rx_l, i_temp2
+		sbr	flags1, (1<<EVAL_RC)|(1<<I2C_MODE)	; i2c message received
+		rjmp	i2c_ack
+
+i2c_tx_init:
+i2c_tx_data:	lds	i_temp1, i2c_rx_state
+		inc	i_temp1
+		sts	i2c_rx_state, i_temp1	; Save updated address
+		sbrc	i_temp1, 0
+		rjmp	i2c_tx_hi
+		lds	i_temp1, i2c_tx_cache	; Low byte cached when hi read
+		out	TWDR, i_temp1		; Send the cached value
+		rjmp	i2c_ack
+i2c_tx_hi:	cpi	i_temp1, 0x83
+		breq	i2c_tx_rev
+		cpi	i_temp1, 0x85
+		breq	i2c_tx_vbat
+		cpi	i_temp1, 0x87
+		breq	i2c_tx_temp
+		cpi	i_temp1, 0x89
+		breq	i2c_tx_curr
+		ldi2	i_temp1, i_temp2, 0xabab	; Send the ID
+i2c_tx_do:	out	TWDR, i_temp1
+		sts	i2c_tx_cache, i_temp2
+		rjmp	i2c_ack
+i2c_tx_rev:	lds	i_temp1, com_count_h
+		lds	i_temp2, com_count_l
+		sts	com_count_h, ZH
+		sts	com_count_l, ZH
+		rjmp	i2c_tx_do
+i2c_tx_vbat:		lds	i_temp1, vbat_h
+		lds	i_temp2, vbat_l
+		rjmp	i2c_tx_do
+i2c_tx_temp:	lds	i_temp1, adctemp_h
+		lds	i_temp2, adctemp_l
+		rjmp	i2c_tx_do
+i2c_tx_curr:	lds	i_temp1, adccurr_h
+		lds	i_temp2, adccurr_l
+		rjmp	i2c_tx_do
+	.endif
 	.endif
 ;-----bko-----------------------------------------------------------------
 urxc_int:
@@ -1769,47 +1507,39 @@ urxc_exit:	out	SREG, i_sreg
 beep_f1:	ldi	temp2, 80
 		ldi	temp4, 200
 		RED_on
-		BLUE_on
 beep_f1_on:	BpFET_on
 		AnFET_on
 		rcall	beep
 		brne	beep_f1_on
-		BLUE_off
 		RED_off
 		ret
 
 beep_f2:	ldi	temp2, 100
 		ldi	temp4, 180
 		GRN_on
-		BLUE_on
 beep_f2_on:	CpFET_on
 		BnFET_on
 		rcall	beep
 		brne	beep_f2_on
-		BLUE_off
 		GRN_off
 		ret
 
 beep_f3:	ldi	temp2, 120
 		ldi	temp4, 160
-		BLUE_on
 beep_f3_on:	ApFET_on
 		CnFET_on
 		rcall	beep
 		brne	beep_f3_on
-		BLUE_off
 		ret
 
 beep_f4:	ldi	temp2, 140
 beep_f4_freq:	ldi	temp4, 140
 beep_f4_fets:	RED_on
 		GRN_on
-		BLUE_on
 beep_f4_on:	CpFET_on
 		AnFET_on
 		rcall	beep
 		brne	beep_f4_on
-		BLUE_off
 		GRN_off
 		RED_off
 		ret
@@ -1822,8 +1552,8 @@ beep:		out	TCNT0, ZH
 beep1:		in	temp1, TCNT0
 		cpi	temp1, 2*CPU_MHZ	; 32µs on
 		brlo	beep1
-		all_pFETs_off temp3
 		all_nFETs_off temp3
+		all_pFETs_off temp3
 		ldi	temp3, CPU_MHZ
 beep2:		out	TCNT0, ZH
 		wdr
@@ -1885,7 +1615,7 @@ eeprom_reset_block:
 
 ;-----bko-----------------------------------------------------------------
 ; Read from or write to the EEPROM block. To avoid duplication, we use the
-; global interrupts flag (I) to enable writing versus reading mde. Only
+; global interrupts flag (I) to enable writing versus reading mode. Only
 ; changed bytes are written. We restore OSCCAL to the boot-time value as
 ; the EEPROM timing is affected by it. We always return by falling through
 ; to osccal_set.
@@ -1965,21 +1695,19 @@ mul_y_12x34:
 		ret
 
 ;-- Hardware diagnostics -------------------------------------------------
-; Any brushless ESC based on the ATmega8 or similar must tie the sense
-; neutral star to AIN0, and the three sense lines to three ADC pins or
-; two ADC pins and AIN1. All of these pins are also normal I/O pins, so
-; we can drive them and see if the ADC values move. A value that does not
-; move indicates a shorted FET or that an incorrect board target has been
-; flashed.
+; Any 3-phase brushless ESC based on the ATmega8 or similar must tie the
+; sense neutral star to AIN0, and the three sense lines to three ADC pins
+; or two ADC pins and AIN1. AIN0 and AIN1 are also normal I/O pins, so we
 ;
-; Note: Some FET drivers such as the LM5109 can pull up the output a bit,
-; making the "stuck high" test return a false positive. Perhaps it would
-; be sufficient to test that the phases read as 0 _or_ can be pulled down
-; by driving AIN0 to ground.
+; can drive them and see if the ADC values move. Also, any non-zero value
+; at power up indicates either a spinning motor, a stuck FET, or that
+; an incorrect board target has been flashed. We can prevent further
+; damage by halting if this is detected.
 ;
 ; In typical conditions on the ATmega8, I/O pins transition to low at
 ; about 1.42V and to high at about 1.86V. The ADC is 10-bit, however, and
-; should work even with a strong sense voltage divider.
+; will work in many more cases (such as with a lower input voltage or
+; stronger sense divider).
 ;
 ; Throughout all of this, the motor may be spinning. If so, we should wait
 ; long enough that each phase falls to 0V and all tests succeed.
@@ -2029,11 +1757,11 @@ check_ain0_low:	sbiw	YL, 1
 		brts	hardware_check		; Do not allow further tests if stuck high
 
 		; If nothing is stuck high, pull up the motor by driving
-		; the emulated neutral (AIN0) high, and try driving each
-		; phase low. While driven, leakage through the star is
-		; eliminated, so one phase will not influence another
-		; unless a motor is connected. A phase on AIN1 cannot be
-		; read by the ADC, so we must skip it.
+		; AIN0 and see if we can pull it low on each phase. We
+		; While the star is driven high or connected to ground,
+		; voltage on one phase will not influence another unless
+		; a motor is attached. So, we have to skip a phase if it
+		; is connected to AIN1.
 
 		sbi	DDRD, 6
 		sbi	PORTD, 6		; Drive AIN0 high
@@ -2117,10 +1845,8 @@ check_sense_low:
 		ldi2	YL, YH, MAX_CHECK_LOOPS
 check_sense_low1:
 		rcall	adc_read
-		; Up to 3.5V to account for ADC offset or driver pull-up.
-		.equ	OFF_MAX_ADC = 35 * 1024 * O_GROUND / (50 * (O_POWER + O_GROUND))
-		sbiwx	temp1, temp2, OFF_MAX_ADC
-		brcs	check_sense_low_ret	; Return if pin reads low
+		adiw	temp1, 0		; Test for zero
+		breq	check_sense_low_ret	; Return if pin reads at 0 (low)
 		sbiw	YL, 1
 		brne	check_sense_low1	; Loop until timeout
 		rjmp	hw_error
@@ -2151,10 +1877,6 @@ hw_error1:
 		RED_on
 		rcall	wait120ms
 		RED_off
-		.elif defined(blue_led)
-		BLUE_on
-		rcall	wait120ms
-		BLUE_off
 		.elif defined(green_led)
 		GRN_on
 		rcall	wait120ms
@@ -2354,7 +2076,7 @@ adc_read:
 		sbr	temp4, (1<<REFS0)	; Enable AVCC (5.0V) reference
 		out	ADMUX, temp4		; Set ADC channel, AVcc reference with cap at AREF (should be safe if bridged)
 		ldi	temp1, (1<<ADEN)+(1<<ADSC)+(1<<ADPS2)+(1<<ADPS1)+(1<<ADPS0)
-		out	ADCSRA, temp1		; Enable the ADC, start conversion
+		out     ADCSRA, temp1		; Enable the ADC, start conversion
 		wdr				; Will wait 25*128 cycles
 adc_wait:	sbic	ADCSRA, ADSC
 		rjmp	adc_wait
@@ -2377,7 +2099,7 @@ adc_wait:	sbic	ADCSRA, ADSC
 ; internal RC slows down when hot, making it impossible to reach full
 ; throttle.
 evaluate_rc_init:
-		.if USE_UART
+		.if USE_UART || defined(USE_INT0S)
 		sbrc	flags1, UART_MODE
 		rjmp	evaluate_rc_uart
 		.endif
@@ -2385,57 +2107,46 @@ evaluate_rc_init:
 		sbrc	flags1, I2C_MODE
 		rjmp	evaluate_rc_i2c
 		.endif
-		.if USE_ICP || USE_INT0
+		.if RC_CALIBRATION && (USE_ICP || USE_INT0)
 		cbr	flags1, (1<<EVAL_RC)
-	; Check if pulse is in aliased input range and toggle RCP_ALIAS to match
-		.if defined(RCP_ALIAS_SHIFT)
-		movw	temp1, rx_l		; Atomic copy of rc pulse length
-		sbiwx	temp1, temp2, MIN_RC_PULS * CPU_MHZ
-		sbc	temp3, temp3		; All temp3 bits <- carry (set if in aliased range)
-		eor	temp3, flags0		; XOR against current flags0 value
-		sbrc	temp3, RCP_ALIAS	; Skip if zero (no change)
-		rjmp	puls_scale_alias_toggle	; or toggle RCP_ALIAS and rescale
-		.endif
-		.if RC_CALIBRATION
-		sbrc	flags0, NO_CALIBRATION	; Is it safe to calibrate now?
-		rjmp	evaluate_rc_puls
 	; If input is above PROGRAM_RC_PULS, we try calibrating throttle
 		ldi2	YL, YH, puls_high_l	; Start with high pulse calibration
+		sbrc	flags0, NO_CALIBRATION	; Is it safe to calibrate now?
+		rjmp	evaluate_rc_puls
 		rjmp	rc_prog1
 rc_prog0:	rcall	wait240ms		; Wait for stick movement to settle
 	; Collect average of throttle input pulse length
-rc_prog1:	rcall	rc_prog_get_rx		; Pulse length into temp1:temp2
-		movw	temp3, temp1		; Save starting pulse length
+rc_prog1:	movw	temp3, rx_l		; Save the starting pulse length
 		wdr
 rc_prog2:	mul	ZH, ZH			; Clear 24-bit result registers (0 * 0 -> temp5:temp6)
 		clr	temp7
 		cpi	YL, low(puls_high_l)	; Are we learning the high pulse?
 		brne	rc_prog3		; No, maybe the low pulse
-		ldi	temp2, 32 * 31/32	; Full speed pulse averaging count (slightly below exact)
 		cpi2	temp3, temp4, PROGRAM_RC_PULS * CPU_MHZ, temp1
-		brcc	rc_prog5		; Equal to or higher than PROGRAM_RC_PULS - start measuring
-		rjmp	evaluate_rc_puls	; Lower than PROGRAM_RC_PULS - exit programming
+		brcs	evaluate_rc_puls	; Lower than PROGRAM_RC_PULS - exit programming
+		ldi	temp1, 32 * 31/32	; Full speed pulse averaging count (slightly below exact)
+		rjmp	rc_prog5
 rc_prog3:	lds	temp1, puls_high_l	; If not learning the high pulse, we should stay below it
 		cp	temp3, temp1
 		lds	temp1, puls_high_h
 		cpc	temp4, temp1
-rc_prog_brcc_prog1:				; Branch trampoline
 		brcc	rc_prog1		; Restart while pulse not lower than learned high pulse
-		ldi	temp2, 32 * 17/16	; Stop/reverse pulse (slightly above exact)
 		cpi	YL, low(puls_low_l)	; Are we learning the low pulse?
-		breq	rc_prog5		; Yes, start measuring
+		brne	rc_prog4		; No, must be the neutral pulse
+		ldi	temp1, 32 * 17/16	; Stop/reverse pulse (slightly above exact)
+		rjmp	rc_prog5
 rc_prog4:	lds	temp1, puls_low_l
 		cp	temp3, temp1
 		lds	temp1, puls_low_h
 		cpc	temp4, temp1
 		brcs	rc_prog1		; Restart while pulse lower than learned low pulse
-		ldi	temp2, 32		; Neutral pulse measurement (exact)
-rc_prog5:	mov	tcnt2h, temp2		; Abuse tcnt2h as pulse counter
+		ldi	temp1, 32		; Neutral pulse measurement (exact)
+rc_prog5:	mov	tcnt2h, temp1		; Abuse tcnt2h as pulse counter
 rc_prog6:	wdr
 		sbrs	flags1, EVAL_RC		; Wait for next pulse
 		rjmp	rc_prog6
 		cbr	flags1, (1<<EVAL_RC)
-		rcall	rc_prog_get_rx		; Pulse length into temp1:temp2
+		movw	temp1, rx_l		; Atomic copy of new rc pulse length
 		add	temp5, temp1		; Accumulate 24-bit average
 		adc	temp6, temp2
 		adc	temp7, ZH
@@ -2457,13 +2168,13 @@ rc_prog6:	wdr
 	; One beep: high (full speed) pulse received
 		rcall	beep_f3
 		cpi	YL, low(puls_high_l+2)
-		breq	rc_prog_brcc_prog1	; Go back to get low pulse
+		breq	rc_prog1		; Go back to get low pulse
 	; Two beeps: low (stop/reverse) pulse received
 		rcall	wait30ms
 		rcall	beep_f3
 		cpi	YL, low(puls_low_l+2)
 		.if RC_PULS_REVERSE
-		breq	rc_prog_brcc_prog1	; Go back to get neutral pulse
+		breq	rc_prog1		; Go back to get neutral pulse
 		.else
 		breq	rc_prog_done
 		.endif
@@ -2472,26 +2183,11 @@ rc_prog6:	wdr
 		rcall	beep_f3
 rc_prog_done:	rcall	eeprom_write_block
 		rjmp	puls_scale		; Calculate the new scaling factors
-rc_prog_get_rx:
-		movw	temp1, rx_l		; Atomic copy of rc pulse length
-		.if defined(RCP_ALIAS_SHIFT)
-		sbrs	flags0, RCP_ALIAS
-		ret
-		ldi	XL, RCP_ALIAS_SHIFT
-rc_prog_get_rx1:
-		lsl	temp1
-		rol	temp2
-		dec	XL
-		brne	rc_prog_get_rx1
 		.endif
-		ret
-		.endif
-		.endif
-	; Fall through from evaluate_rc_init
 ;-----bko-----------------------------------------------------------------
 ; These routines may clobber temp* and Y, but not X.
 evaluate_rc:
-		.if USE_UART
+		.if USE_UART || defined(USE_INT0S)
 		sbrc	flags1, UART_MODE
 		rjmp	evaluate_rc_uart
 		.endif
@@ -2508,16 +2204,17 @@ evaluate_rc_puls:
 		sts	brake_want, ZH
 		.endif
 		movw	temp1, rx_l		; Atomic copy of rc pulse length
-		cpi2	temp1, temp2, MIN_RC_PULS * CPU_MHZ, temp3
-		brcs	puls_length_short	; Branch if short pulse
-		.if defined(RCP_ALIAS)
-		sbrc	flags0, RCP_ALIAS
-		rjmp	puls_length_error	; Throw away long pulse if alias range expected
+		.if defined(MIN_RC_PULS)
+		cpi2	temp1, temp2, MIN_RC_PULS, temp3
+		brcc	puls_long_enough
+		ret
+puls_long_enough:
 		.endif
-puls_alias:
 		.if LOW_BRAKE
-		lds	YL, low_brake_l
-		lds	YH, low_brake_h
+		lds	YL, puls_low_l		; Lowest calibrated pulse (regardless of RC_PULS_REVERSE)
+		lds	YH, puls_low_h
+		sbiwx	YL, YH, RCP_LOW_DBAND * CPU_MHZ
+		brcs	puls_not_low_brake
 		cp	temp1, YL
 		cpc	temp2, YH
 		brcc	puls_not_low_brake
@@ -2549,31 +2246,12 @@ puls_zero_brake:
 puls_zero:	clr	YL
 		clr	YH
 		rjmp	rc_duty_set
-puls_length_short:
-		.if defined(RCP_ALIAS_SHIFT)
-		; Additional length checks for aliased range
-		cpi2	temp1, temp2, (MIN_RC_PULS * CPU_MHZ) >> RCP_ALIAS_SHIFT, temp3
-		brcs	puls_length_error
-		cpi2	temp1, temp2, (MAX_RC_PULS * CPU_MHZ) >> RCP_ALIAS_SHIFT, temp3
-		sbrc	flags0, RCP_ALIAS	; If alias range expected
-		brcs	puls_alias
-		.endif
-puls_length_error:
-		sbr	flags0, (1<<RCP_ERROR)
-		ret
 puls_plus:
 		lds	temp3, fwd_scale_l	; Load forward scaling factor
 		lds	temp4, fwd_scale_h
 puls_not_zero:
 		.if RCP_DEADBAND
-		.if defined(RCP_ALIAS_SHIFT)
-		lds	YL, deadband_l		; Load dynamic deadband
-		lds	YH, deadband_h
-		sub	temp1, YL
-		sbc	temp2, YH
-		.else
 		sbiwx	temp1, temp2, RCP_DEADBAND * CPU_MHZ
-		.endif
 		brmi	puls_zero_brake
 		.endif
 .endif
@@ -2587,10 +2265,14 @@ rc_duty_set:	sts	rc_duty_l, YL
 		sts	rc_duty_h, YH
 		sbrs	flags0, SET_DUTY
 		rjmp	rc_no_set_duty
-		ldi	temp1, RCP_TOT
+		.if defined(USE_INT0S) || defined(SIMPLE_I2C)
+		ldi	temp1, 64		; about 4s for serial
+		.else
+		ldi	temp1, 2
+		.endif
 		mov	rc_timeout, temp1	; Short rc_timeout when driving
 		rjmp	set_new_duty_l		; Skip reload into YL:YH
-rc_no_set_duty:	ldi	temp1, 12		; More than 10 needed to arm
+rc_no_set_duty:	ldi	temp1, RCP_TOT
 		cp	rc_timeout, temp1
 		adc	rc_timeout, ZH
 		ret
@@ -2598,6 +2280,7 @@ rc_no_set_duty:	ldi	temp1, 12		; More than 10 needed to arm
 .if USE_I2C
 evaluate_rc_i2c:
 		movw	YL, rx_l		; Atomic copy of 16-bit input
+	.if !defined(SIMPLE_I2C)
 		cbr	flags1, (1<<EVAL_RC)
 	; Load settings from BLConfig structure (BL-Ctrl v2)
 		lds	temp1, blc_bitconfig
@@ -2618,6 +2301,26 @@ evaluate_rc_i2c:
 		movw	temp1, YL
 		ldi2	temp3, temp4, 0x100 * (POWER_RANGE - MIN_DUTY) / 247
 		rjmp	rc_do_scale		; The rest of the code is common
+	.else
+		cbr	flags1, (1<<EVAL_RC)+(1<<REVERSE)
+		sbrc	YH, 7
+		rcall i2c_set_reverse
+		adiw	YL, 0			; 16-bit zero-test
+		breq	rc_duty_set		; Power off
+	; Scale so that Y == 32767 is MAX_POWER.
+		movw	temp1, YL
+		ldi2	temp3, temp4, 0x10000 * (POWER_RANGE - MIN_DUTY) / 32767
+		rjmp	rc_do_scale		; The rest of the code is common
+i2c_set_reverse:
+		sbr	  flags1, (1<<REVERSE) ; set reverse flag
+		; The next four lines make the value positive so that we basically
+		; absolute value the speed
+		com   YH
+		com   YL
+		subi  YL,-1
+		sbci  YH,-1
+		ret
+	.endif
 .endif
 ;-----bko-----------------------------------------------------------------
 .if USE_UART
@@ -2632,32 +2335,35 @@ evaluate_rc_uart:
 		ldi2	temp3, temp4, 0x100 * (POWER_RANGE - MIN_DUTY) / 200
 		rjmp	rc_do_scale		; The rest of the code is common
 .endif
-;-----bko-----------------------------------------------------------------
-; If an input alias is defined, shift the values in temp3:temp4 and
-; temp1:temp2 to follow.
-.if defined(RCP_ALIAS_SHIFT)
-puls_scale_alias_shift:
-		ldi	YL, RCP_ALIAS_SHIFT
-puls_scale_alias_shift1:
-		lsr	temp4
-		ror	temp3
-		lsr	temp2
-		ror	temp1
-		dec	YL
-		brne	puls_scale_alias_shift1
+;-------------------------------------------------------------------------
+.if defined(USE_INT0S)
+evaluate_rc_uart:
+		cli
+		movw	YL, rx_l		; Copy 16-bit input
+		mov	temp1, flags1
+		sei
+		sbrs	temp1, EVAL_RC
 		ret
-;-----bko-----------------------------------------------------------------
-; Toggle RCP_ALIAS and fall through to pulse_scale
-puls_scale_alias_toggle:
-		ldi	temp1, (1<<RCP_ALIAS)
-		eor	flags0, temp1
+		cbr	flags1, (1<<EVAL_RC)+(1<<REVERSE)
+		; This probably can be done slightly more efficiently
+		.if MOTOR_REVERSE
+		sbrc	YH, 5
+		.else
+		sbrs	YH, 5
+		.endif
+		sbr	flags1, (1<<REVERSE)
+		cbr	YH, (1<<5)
+		adiw	YL, 0			; 16-bit zero-test
+		breq	rc_duty_set		; Power off
+	; Scale so that YH == 32 is MAX_POWER.
+		movw	temp1, YL
+		ldi2	temp3, temp4, 0x100 * (POWER_RANGE - MIN_DUTY) / 32
+		rjmp	rc_do_scale		; The rest of the code is common
 .endif
 ;-----bko-----------------------------------------------------------------
 ; Calculate the neutral offset and forward (and reverse) scaling factors
 ; to line up with the high/low (and neutral) pulse lengths.
 puls_scale:
-	; If reversible input is enabled, scale from neutral; otherwise,
-	; scale from the lowest point.
 		.if RC_PULS_REVERSE
 		lds	temp1, puls_neutral_l
 		lds	temp2, puls_neutral_h
@@ -2665,71 +2371,29 @@ puls_scale:
 		lds	temp1, puls_low_l
 		lds	temp2, puls_low_h
 		.endif
-		lds	temp3, puls_high_l
-		lds	temp4, puls_high_h
-		.if defined(RCP_ALIAS_SHIFT)
-		sbrc	flags0, RCP_ALIAS
-		rcall	puls_scale_alias_shift
-		.endif
+		sts	neutral_l, temp1
+		sts	neutral_h, temp2
 	; Find the distance to full throttle and fit it to match the
 	; distance between FULL_RC_PULS and STOP_RC_PULS by walking
 	; for the lowest 16.16 multiplier that just brings us in range.
-		sts	neutral_l, temp1
-		sts	neutral_h, temp2
+		lds	temp3, puls_high_l
+		lds	temp4, puls_high_h
 		sub	temp3, temp1
 		sbc	temp4, temp2
 		rcall	puls_find_multiplicand
 		sts	fwd_scale_l, temp1
 		sts	fwd_scale_h, temp2
-
-	; If reversible input is enabled, calculate the reverse scaling
-	; factor.
 		.if RC_PULS_REVERSE
 		lds	temp3, puls_neutral_l
 		lds	temp4, puls_neutral_h
 		lds	temp1, puls_low_l
 		lds	temp2, puls_low_h
-		.if defined(RCP_ALIAS_SHIFT)
-		sbrc	flags0, RCP_ALIAS
-		rcall	puls_scale_alias_shift
-		.endif
 		sub	temp3, temp1
 		sbc	temp4, temp2
 		rcall	puls_find_multiplicand
 		sts	rev_scale_l, temp1
 		sts	rev_scale_h, temp2
 		.endif
-
-	; If a deadband is enabled and input aliases are supported,
-	; calculate the scaled deadband in advance.
-		.if RCP_DEADBAND && defined(RCP_ALIAS_SHIFT)
-		ldi2	temp1, temp2, RCP_DEADBAND * CPU_MHZ
-		sbrc	flags0, RCP_ALIAS
-		rcall	puls_scale_alias_shift
-		sts	deadband_l, temp1
-		sts	deadband_h, temp2
-		.endif
-
-	; If low brake is enabled, store the position where it starts
-	; after subtracting the deadband. This avoids the calculation
-	; in the receive path.
-		.if LOW_BRAKE
-		lds	temp1, puls_low_l		; Lowest calibrated pulse (regardless of RC_PULS_REVERSE)
-		lds	temp2, puls_low_h
-		ldi2	temp3, temp4, RCP_LOW_DBAND * CPU_MHZ
-		.if defined(RCP_ALIAS_SHIFT)
-		sbrc	flags0, RCP_ALIAS
-		rcall	puls_scale_alias_shift
-		.endif
-		sub	temp1, temp3
-		sbc	temp2, temp4
-		brcc	puls_low_brake_save
-		ldi2	temp1, temp2, 0
-puls_low_brake_save:
-		sts	low_brake_l, temp1
-		sts	low_brake_h, temp2
-		.endif
-
 		ret
 ;-----bko-----------------------------------------------------------------
 ; Find the lowest 16.16 multiplicand that brings us to full throttle
@@ -2738,13 +2402,11 @@ puls_low_brake_save:
 ; m = (POWER_RANGE - MIN_DUTY) * 65536 / (1000us * 16MHz)
 ; If the input range is < 100us at 8MHz, < 50us at 16MHz, we return
 ; too low a multiplicand (higher won't fit in 16 bits).
-; We preload temp1:temp2 with the weakest possible scale based on the
-; fact that we can't accept a wider range than MAX_RC_PULS microseconds.
 puls_find_multiplicand:
 		.if RCP_DEADBAND
 		sbi2	temp3, temp4, RCP_DEADBAND * CPU_MHZ
 		.endif
-		ldi2	temp1, temp2, (POWER_RANGE - MIN_DUTY) * 65536 / (MAX_RC_PULS * CPU_MHZ)
+		ldi2	temp1, temp2, (POWER_RANGE - MIN_DUTY) * 65536 / MAX_RC_PULS / CPU_MHZ
 puls_find1:	adiw	temp1, 1
 		wdr
 		cpi	temp2, 0xff
@@ -2807,51 +2469,23 @@ update_timing:
 update_timing1:
 
 	; Calculate a hopefully sane duty cycle limit from this timing,
-	; to prevent excessive current if high duty is requested at low
-	; speed. This is the best we can do without a current sensor.
-	; The actual current peak will depend on motor KV and voltage,
-	; so this is just an approximation. This is calculated smoothly
-	; with a (very slow) software divide only if timing permits.
-		cpi2	temp2, temp3, (TIMING_RANGE3 * CPU_MHZ / 2) >> 8, temp4
+	; to prevent excessive current if high duty is requested when the
+	; current duty is low. This is the best we can do without a current
+	; sensor. The actual current will depend on motor KV and voltage,
+	; so this is just an approximation. It would be nice if we could
+	; do this with math instead of two constants, but we need a divide.
+	; Clobbers only temp4. Fastest in case of fastest timing.
+		cpi2	temp2, temp3, (TIMING_RANGE2 * CPU_MHZ / 2) >> 8, temp4
 		ldi2	XL, XH, MAX_POWER
-		brcs	update_timing4	; Fast timing: no duty limit.
-
-		; 24.8-bit fixed-point unsigned divide, inlined with available registers:
-		; duty (XL:XH) = MAX_POWER * (TIMING_RANGE3 * CPU_MHZ / 2) / period (temp1:temp2:temp3)
-		; This takes about one microsecond per loop, but we only take this path
-		; when the motor is spinning slowly.
-
-		ldi	XL, byte3(MAX_POWER * (TIMING_RANGE3 * CPU_MHZ / 2) / 0x100)
-		ldi	XH, 33		; Iteration counter
-		movw	timing_duty_l, XL
-		ldi2	XL, XH, MAX_POWER * (TIMING_RANGE3 * CPU_MHZ / 2) / 0x100
-
-		mul	ZH, ZH		; Zero temp5, temp6
-		sub	temp4, temp4	; Zero temp4, clear carry
-		rjmp	fudiv24_ep	; Jump with carry clear
-fudiv24_loop:
-		rol	temp4
-		rol	temp5
-		rol	temp6
-		cp	temp4, temp1	; Divide by commutation period
-		cpc	temp5, temp2
-		cpc	temp6, temp3
-		brcs	fudiv24_ep
-		sub	temp4, temp1
-		sbc	temp5, temp2
-		sbc	temp6, temp3
-fudiv24_ep:
-		rol	XL
-		rol	XH
-		rol	timing_duty_l
-		dec	timing_duty_h
-		brne	fudiv24_loop
-		com	XL
-		com	XH
-
-		cpi2	XL, XH, PWR_MAX_RPM1, temp4
-		brcc	update_timing4
-		ldi2	XL, XH, PWR_MAX_RPM1
+		brcs	update_timing4
+		cpi2	temp2, temp3, (TIMING_RANGE1 * CPU_MHZ / 2) >> 8, temp4
+		ldi2	XL, XH, PWR_MAX_RPM2
+		brcs	update_timing4
+	; Limit minimum RPM (slowest timing)
+		cpi2	temp2, temp3, (TIMING_MIN * CPU_MHZ / 2) >> 8, temp4
+		brcs	update_timing2
+		ldi3	temp1, temp2, temp3, TIMING_MIN * CPU_MHZ / 2
+update_timing2:	ldi2	XL, YH, PWR_MAX_RPM1
 update_timing4:	movw	timing_duty_l, XL
 
 		sts	timing_l, temp1		; Store timing (120 degrees)
@@ -2895,24 +2529,13 @@ update_timing4:	movw	timing_duty_l, XL
 		sts	com_time_l, YL		; Store start of next commutation
 		sts	com_time_h, YH
 		sts	com_time_x, temp7
-
-		cpi	temp2, 0x10		; Will 240 degrees fit in 15 bits?
-		cpc	temp3, ZH
-		brcs	update_timing_fast
-		cbr	flags2, (1<<TIMING_FAST)
-		rcall	set_ocr1a_abs_slow	; Set timer for start of next commutation
-		rjmp	update_timing_out
-update_timing_fast:
-		sbr	flags2, (1<<TIMING_FAST)
-		rcall	set_ocr1a_abs_fast
-update_timing_out:
+		rcall	set_ocr1a_abs		; Set timer for start of next commutation
 
 		sbrc	flags1, EVAL_RC
 		rjmp	evaluate_rc		; Set new duty either way
-	; Fall through to set_new_duty
 ;-----bko-----------------------------------------------------------------
-; Unlike update_timing above, we try not to clobber XL and XH which are
-; used for loop-counting in wait_for_edge.
+; Unlike update_timing above, we try not to clobber XL, XH used as a loop
+; counter in wait_for_edge.
 set_new_duty:	lds	YL, rc_duty_l
 		lds	YH, rc_duty_h
 set_new_duty_l:	cp	YL, timing_duty_l
@@ -2933,7 +2556,7 @@ set_new_duty11:
 		cp	YL, temp1
 		cpc	YH, temp2
 		brcs	set_new_duty12
-		movw	temp1, YL		; temp1:temp2 >= PWR_MIN_START
+		movw	temp1, YL		; temp2:temp1 >= PWR_MIN_START
 set_new_duty12:	lsl	temp1
 		rol	temp2
 		cp	sys_control_l, temp1
@@ -2964,7 +2587,7 @@ set_new_duty13:
 set_new_duty_set:
 		; When off duty is short, skip complementary PWM; otherwise,
 		; compensate the off_duty time to account for the overhead.
-	.if CPWM_SOFT
+	.if COMP_PWM
 		set
 		ldi	temp4, pwm_on_fast	; Short off period: skip complementary PWM
 		cpse	temp2, ZH
@@ -2984,9 +2607,9 @@ set_new_duty21:
 		cli				; Critical section (off_duty & flags together)
 		movw	off_duty_l, temp1	; Set new OFF duty for PWM interrupt
 		sts	pwm_on_ptr, temp4	; Set Next PWM ON interrupt vector
-	.if CPWM_SOFT
+		.if COMP_PWM
 		bld	flags2, SKIP_CPWM	; If to skip complementary PWM
-	.endif
+		.endif
 		sei
 		ret
 set_new_duty_full:
@@ -2996,11 +2619,7 @@ set_new_duty_full:
 set_new_duty_zero:
 		; Power off
 		cbr	flags1, (1<<FULL_POWER)+(1<<POWER_ON)
-		ldi	temp4, pwm_off		; Skip the on phase entirely
-	.if CPWM_SOFT
-		set				; Skip complementary PWM
-	.endif
-		rjmp	set_new_duty21
+		rjmp	set_new_duty_set
 ;-----bko-----------------------------------------------------------------
 ; Multiply the 24-bit timing in temp1:temp2:temp3 by temp4 and add the top
 ; 24-bits to YL:YH:temp7.
@@ -3025,21 +2644,10 @@ load_timing:
 		lds	YH, com_time_h
 		lds	temp7, com_time_x
 		ret
-;-----bko-----------------------------------------------------------------
-; Set zero-crossing timeout to 240 degrees
-set_ocr1a_zct_slow:
-		rcall	load_timing
-		add	YL, temp1
-		adc	YH, temp2
-		adc	temp7, temp3
-		add	YL, temp1
-		adc	YH, temp2
-		adc	temp7, temp3
-		rjmp	set_ocr1a_abs_slow
-set_timing_degrees_slow:
+set_timing_degrees:
 		rcall	load_timing
 		rcall	update_timing_add_degrees
-	; Fall through to set_ocr1a_abs_slow
+	; Fall through to set_ocr1a_abs
 ;-----bko-----------------------------------------------------------------
 ; Set OCT1_PENDING until the absolute time specified by YL:YH:temp7 passes.
 ; Returns current TCNT1(L:H:X) value in temp1:temp2:temp3.
@@ -3049,7 +2657,7 @@ set_timing_degrees_slow:
 ; instruction between interrupts, and several other higher-priority
 ; interrupts may (have) come up. So, we must save tcnt1x and TIFR with
 ; interrupts disabled, then do a correction.
-set_ocr1a_abs_slow:
+set_ocr1a_abs:
 		in	temp4, TIMSK
 		mov	temp5, temp4
 		cbr	temp4, (1<<TOIE1)+(1<<OCIE1A)
@@ -3072,55 +2680,9 @@ set_ocr1a_abs_slow:
 		sbc	YH, temp2		; passed -- if so, clear pending flag.
 		sbc	temp7, temp3
 		sts	ocr1ax, temp7
-		brpl	set_ocr1a_abs_slow1	; Skip set if time has passed
+		brpl	set_ocr1a_abs1		; Skip set if time has passed
 		cbr	flags0, (1<<OCT1_PENDING)
-set_ocr1a_abs_slow1:
-		out	TIMSK, temp5		; Enable TOIE1 and OCIE1A again
-		ret
-
-; Variants of the above with a fast path when timing is guaranteed to fit
-; within 15 bits.
-set_ocr1a_zct:
-		sbrs	flags2, TIMING_FAST
-		rjmp	set_ocr1a_zct_slow
-		lds	temp1, timing_l
-		lds	temp2, timing_h
-		lds	YL, com_time_l
-		lds	YH, com_time_h
-		add	YL, temp1
-		adc	YH, temp2
-		add	YL, temp1
-		adc	YH, temp2
-		rjmp	set_ocr1a_abs_fast
-set_timing_degrees:
-		sbrs	flags2, TIMING_FAST
-		rjmp	set_timing_degrees_slow
-		lds	temp1, timing_l
-		lds	temp2, timing_h
-		lds	YL, com_time_l
-		lds	YH, com_time_h
-		mul	temp1, temp4
-		add	YL, temp6
-		adc	YH, ZH
-		mul	temp2, temp4
-		add	YL, temp5
-		adc	YH, temp6
-set_ocr1a_abs_fast:
-		ldi	temp4, (1<<OCF1A)
-		cli
-		out	OCR1AH, YH
-		out	OCR1AL, YL
-		out	TIFR, temp4		; Clear any pending OCF1A interrupt
-		in	temp1, TCNT1L
-		in	temp2, TCNT1H
-		sbr	flags0, (1<<OCT1_PENDING)
-		sts	ocr1ax, ZH
-		sei
-		sub	YL, temp1		; Check that time might have already
-		sbc	YH, temp2		; passed -- if so, clear pending flag.
-		brpl	set_ocr1a_abs_fast1	; Skip set if time has passed
-		cbr	flags0, (1<<OCT1_PENDING)
-set_ocr1a_abs_fast1:
+set_ocr1a_abs1:	out	TIMSK, temp5		; Enable TOIE1 and OCIE1A again
 		ret
 ;-----bko-----------------------------------------------------------------
 ; Set OCT1_PENDING until the relative time specified by YL:YH:temp7 passes.
@@ -3152,9 +2714,6 @@ switch_power_off:
 		ldi	ZL, low(pwm_wdr)	; Stop PWM switching
 		all_pFETs_off temp1
 		all_nFETs_off temp1
-		.if MOTOR_BRAKE || LOW_BRAKE
-		sts	brake_active, ZH	; No active brake
-		.endif
 		ret
 ;-----bko-----------------------------------------------------------------
 .if BOOT_JUMP
@@ -3195,7 +2754,7 @@ boot_loader_jump:
 ;-----bko-----------------------------------------------------------------
 .if USE_I2C
 i2c_init:
-		ldi	temp1, I2C_ADDR + (MOTOR_ID << 1)
+		ldi	temp1, (I2C_ADDR + MOTOR_ID) << 1
 		.if defined(MK_ADDRESS_PADS)
 		sbis	PINB, adr1		; Offset MOTOR_ID by address pads
 		subi	temp1, -1
@@ -3207,22 +2766,790 @@ i2c_init:
 		ret
 .endif
 ;-----bko-----------------------------------------------------------------
-.if BEEP_RCP_ERROR
-rcp_error_beep:
+control_start:
+
+; Check cell count
+.if BLIP_CELL_COUNT
+	.if defined(mux_voltage) && !CELL_COUNT
+		rcall	adc_cell_count
+		cpi	temp1, 5
+		brlo	cell_count_good		; Detection of >=~5 LiPo cells becomes ambiguous based on charge state
+		ldi	temp1, 0
+cell_count_good:
+	.else
+		ldi	temp1, CELL_COUNT
+	.endif
+		mov	YL, temp1		; Beep clobbers temp1-temp5
+		cpi	YL, 0
+		breq	cell_blipper1
+cell_blipper:
+		rcall	wait120ms
+		ldi	temp2, 10		; Short blip (not too long for this)
+		rcall	beep_f4_freq
+		dec	YL
+		brne	cell_blipper
+		rcall	wait120ms
+cell_blipper1:
+
+.endif
+
+control_disarm:
+	; LEDs off while disarmed
+		GRN_off
+		RED_off
+
+		rcall	puls_scale
+
+	; Enable timer interrupts (we only do this late to improve beep quality)
+		ldi	temp1, (1<<TOIE1)+(1<<OCIE1A)+(1<<TOIE2)
+		.if defined(USE_INT0S)
+		sbr	temp1, (1<<TOIE2)
+		.endif
+		out	TIFR, temp1		; Clear TOIE1, OCIE1A, and TOIE2 flags
+		out	TIMSK, temp1		; Enable t1ovfl_int, t1oca_int, t2ovfl_int
+
+		.if defined(HK_PROGRAM_CARD)
+	; This program card seems to send data at 1200 baud N81,
+	; Messages start with 0xdd 0xdd, have 7 bytes of config,
+	; and end with 0xde, sent two seconds after power-up or
+	; after any jumper change.
+		.equ	BAUD_RATE = 1200
+		.equ	UBRR_VAL = F_CPU / BAUD_RATE / 16 - 1
+		outi	UBRRH, high(UBRR_VAL), temp1
+		outi	UBRRL, low(UBRR_VAL), temp1
+		sbi	UCSRB, RXEN		; Do programming card rx by polling
+		outi	UCSRC, (1<<URSEL)|(1<<UCSZ1)|(1<<UCSZ0), temp1	; N81
+		.endif
+
+	; Initialize input sources (i2c and/or rc-puls)
+		.if USE_UART && !defined(HK_PROGRAM_CARD)
+		.equ	BAUD_RATE = 38400
+		.equ	UBRR_VAL = F_CPU / BAUD_RATE / 16 - 1
+		outi	UBRRH, high(UBRR_VAL), temp1
+		outi	UBRRL, low(UBRR_VAL), temp1
+		sbi	UCSRB, RXEN		; We don't actually tx
+		outi	UCSRC, (1<<URSEL)|(1<<UCSZ1)|(1<<UCSZ0), temp1	; N81
+		in	temp1, UDR
+		sbi	UCSRA, RXC		; clear flag
+		sbi	UCSRB, RXCIE		; enable reception irq
+		.endif
+		.if USE_I2C
+		rcall	i2c_init
+		.endif
+		.if USE_INT0 || USE_ICP || defined(USE_INT0S)
+		rcp_int_rising_edge temp1
+		rcp_int_enable temp1
+		.endif
+		.if defined(USE_INT0S)
+		in	temp1, TCNT1L
+		in	temp2, TCNT1H
+		adiwx	temp1, temp2, 100	; Make sure OCF1B gets set
+		out	OCR1BH, temp2
+		out	OCR1BL, temp1
+		ldi2	temp1, temp2, 0x1234
+		sts	com_count_h, temp2
+		sts	com_count_l, temp1
+		.endif
+
+	; Wait for one of the input sources to give arming input
+
+i_rc_puls1:	clr	rc_timeout
+		cbr	flags1, (1<<EVAL_RC)+(1<<I2C_MODE)+(1<<UART_MODE)
+		sts	rct_boot, ZH
+		sts	rct_beacon, ZH
+i_rc_puls2:	wdr
+		.if defined(HK_PROGRAM_CARD)
+		.endif
+		sbrc	flags1, EVAL_RC
+		rjmp	i_rc_puls_rx
+		.if BOOT_JUMP
+		rcall	boot_loader_test
+		.endif
+		sbrc	flags2, READ_ADC
+		rcall	start_adc_read
+		.if BEACON
+		lds	temp1, rct_beacon
+		cpi	temp1, 120		; Beep every 120 * 16 * 65536us (~8s)
+		brne	i_rc_puls2
+		ldi	temp1, 60
+		sts	rct_beacon, temp1	; Double rate after the first beep
+		rcall	beep_f3			; Beacon
+		.endif
+		rjmp	i_rc_puls2
+i_rc_puls_rx:	rcall	evaluate_rc_init
+		lds	YL, rc_duty_l
+		lds	YH, rc_duty_h
+		adiw	YL, 0			; Test for zero
+		brne	i_rc_puls1
+		.if defined(USE_INT0S) || defined(SIMPLE_I2C)
+		; A single command is enough so as to allow slow rates
+		.else
+		ldi	temp1, 10		; wait for this count of receiving power off
+		cp	rc_timeout, temp1
+		brlo	i_rc_puls2
+		.endif
+		.if USE_I2C
+		sbrs	flags1, I2C_MODE
+		out	TWCR, ZH		; Turn off I2C and interrupt
+		.endif
+		.if USE_UART
+		sbrs	flags1, UART_MODE
+		cbi	UCSRB, RXEN		; Turn off receiver
+		.endif
+		.if USE_INT0 || USE_ICP
+		mov	temp1, flags1
+		andi	temp1, (1<<I2C_MODE)+(1<<UART_MODE)
+		breq	i_rc_puls3
+		rcp_int_disable temp1		; Turn off RC pulse interrupt
+i_rc_puls3:
+		.endif
+
+		rcall	beep_f4			; signal: rcpuls ready
+		rcall	beep_f4
+		rcall	beep_f4
+
+	; Fall through to init_startup
+;-----bko-----------------------------------------------------------------
+init_startup:
+		rcall	switch_power_off	; Disables PWM timer, turns off all FETs
+		cbr	flags0, (1<<SET_DUTY)	; Do not yet set duty on input
+		.if MOTOR_BRAKE || LOW_BRAKE
+		sts	brake_active, ZH	; No active brake
+		.endif
+		GRN_on				; Green on while armed and idle or braking
+		RED_off
+wait_for_power_on_init:
+		sts	rct_boot, ZH
+		sts	rct_beacon, ZH
+
+		.if MOTOR_BRAKE || LOW_BRAKE
+		lds	temp3, brake_want
+		lds	temp4, brake_active
+		cp	temp3, temp4
+		breq	wait_for_power_on
+
+		rcall	switch_power_off	; Disable any active brake
+		sts	brake_active, temp3	; Set new brake_active to brake_want
+
+		cpi	temp3, 1		; Neutral brake
+		brne	set_brake1
+		ldi	YL, 1 << BRAKE_SPEED
+		sts	brake_sub, YL
+		ldi2	YL, YH, BRAKE_POWER
+		rjmp	set_brake_duty
+
+set_brake1:	cpi	temp3, 2		; Thumb brake
+		brne	wait_for_power_on
+		ldi	YL, 1 << LOW_BRAKE_SPEED
+		sts	brake_sub, YL
+		ldi2	YL, YH, LOW_BRAKE_POWER
+
+set_brake_duty:	ldi2	temp1, temp2, MAX_POWER
+		sub	temp1, YL		; Calculate OFF duty
+		sbc	temp2, YH
+		rcall	set_new_duty_set
+		ldi	ZL, low(pwm_brake_off)	; Enable PWM brake mode
+		clr	tcnt2h
+		clr	sys_control_l		; Abused as duty update divisor
+		outi	TCCR2, T2CLK, temp1	; Enable PWM, cleared later by switch_power_off
+		.endif
+
+wait_for_power_on:
+		wdr
+		sbrc	flags1, EVAL_RC
+		rjmp	wait_for_power_rx
+		tst	rc_timeout
+		brne	wait_for_power_on	; Tight loop unless rc_timeout is zero
+		.if BOOT_JUMP
+		rcall	boot_loader_test
+		.endif
+		sbrc	flags2, READ_ADC
+		rcall	start_adc_read
+		lds	temp1, rct_beacon
+		cpi	temp1, 30		; Disarm after ~2 seconds of no signal
+		brne	wait_for_power_on
 		rcall	switch_power_off	; Brake may have been on
 		rcall	wait30ms
-		lds	temp4, rcp_beep_count
-		subi	temp4, -4
-		sts	rcp_beep_count, temp4
-		brne	rcp_error_beep_more
-		cbr	flags0, (1<<RCP_ERROR)
-rcp_error_beep_more:
-		ldi	temp2, 18		; Short beep pulses to indicate corrupted PWM input
-		rjmp	beep_f4_freq
-.endif
+		rcall	beep_f3			; Play beeps for signal lost, disarming
+		rcall	beep_f2
+		rjmp	control_disarm		; Do not start motor until neutral signal received once again
+wait_for_power_rx:
+		.if USE_I2C
+		sbrc	flags0, EEPROM_RESET
+		rcall	eeprom_reset_block
+		sbrc	flags0, EEPROM_WRITE
+		rcall	eeprom_write_block
+		.endif
+		rcall	evaluate_rc		; Only get rc_duty, don't set duty
+		adiw	YL, 0			; Test for zero
+		breq	wait_for_power_on_init
+		tst	rc_timeout
+		breq	wait_for_power_on_init
+
+start_from_running:
+		rcall	switch_power_off
+		sbrc	flags2, BLIND_WAIT	; wait for any ADC op to end
+		rjmp	start_from_running
+		comp_init temp1			; init comparator
+		RED_off
+		GRN_off
+
+		ldi2	YL, YH, PWR_MIN_START	; Start with limited power to reduce the chance that we
+		movw	sys_control_l, YL	; align to a timing harmonic
+
+		sbr	flags0, (1<<SET_DUTY)
+		; Set STARTUP flag and call update_timing which will set
+		; last_tcnt1 and set the duty (limited by STARTUP) and
+		; set POWER_ON.
+		rcall	wait_timeout
+		.if defined(USE_INT0S) || defined(SIMPLE_I2C)
+		ldi	temp1, 64
+		.else
+		ldi	temp1, 2		; Start with a short timeout to stop quickly
+		.endif
+		mov	rc_timeout, temp1	; if we see no further pulses after the first.
+		ldi	temp1, 6		; Do not enable FETs during first cycle to
+		sts	powerskip, temp1	; see if motor is running, and align to it.
+		ldi	temp1, ENOUGH_GOODIES	; If we can follow without a timeout, do not
+		sts	goodies, temp1		; continue in startup mode (long ZC filtering).
+		outi	TCCR2, T2CLK, temp1	; Enable PWM (ZL has been set to pwm_wdr)
+
 ;-----bko-----------------------------------------------------------------
-main:
-		clr	r0
+; *** commutation utilities ***
+
+.macro com1com2
+		; Bp off, Ap on
+		set_comp_phase_b temp1
+		BpFET_off
+		sbrc	flags1, POWER_ON
+		ApFET_on
+.endmacro
+
+.macro com2com1
+		; Bp on, Ap off
+		set_comp_phase_a temp1
+		ApFET_off
+		sbrc	flags1, POWER_ON
+		BpFET_on
+.endmacro
+
+.macro com2com3
+		; Cn off, Bn on
+		set_comp_phase_c temp1
+		cli
+		cbr	flags2, ALL_FETS
+		sbrc	flags1, POWER_ON
+		sbr	flags2, (1<<B_FET)
+		.if COMP_PWM
+		CpFET_off
+		.endif
+		in	temp1, CnFET_port
+		CnFET_off
+		in	temp2, CnFET_port
+		cpse	temp1, temp2
+		BnFET_on
+		sei
+.endmacro
+
+.macro com3com2
+		; Cn on, Bn off
+		set_comp_phase_b temp1
+		cli
+		cbr	flags2, ALL_FETS
+		sbrc	flags1, POWER_ON
+		sbr	flags2, (1<<C_FET)
+		.if COMP_PWM
+		BpFET_off
+		.endif
+		in	temp1, BnFET_port
+		BnFET_off
+		in	temp2, BnFET_port
+		cpse	temp1, temp2
+		CnFET_on
+		sei
+.endmacro
+
+.macro com3com4
+		; Ap off, Cp on
+		set_comp_phase_a temp1
+		ApFET_off
+		sbrc	flags1, POWER_ON
+		CpFET_on
+.endmacro
+
+.macro com4com3
+		; Ap on, Cp off
+		set_comp_phase_c temp1
+		CpFET_off
+		sbrc	flags1, POWER_ON
+		ApFET_on
+.endmacro
+
+.macro com4com5
+		; Bn off, An on
+		set_comp_phase_b temp1
+		cli
+		cbr	flags2, ALL_FETS
+		sbrc	flags1, POWER_ON
+		sbr	flags2, (1<<A_FET)
+		.if COMP_PWM
+		BpFET_off
+		.endif
+		in	temp1, BnFET_port
+		BnFET_off
+		in	temp2, BnFET_port
+		cpse	temp1, temp2
+		AnFET_on
+		sei
+.endmacro
+
+.macro com5com4
+		; Bn on, An off
+		set_comp_phase_a temp1
+		cli
+		cbr	flags2, ALL_FETS
+		sbrc	flags1, POWER_ON
+		sbr	flags2, (1<<B_FET)
+		.if COMP_PWM
+		ApFET_off
+		.endif
+		in	temp1, AnFET_port
+		AnFET_off
+		in	temp2, AnFET_port
+		cpse	temp1, temp2
+		BnFET_on
+		sei
+.endmacro
+
+.macro com5com6
+		; Cp off, Bp on
+		set_comp_phase_c temp1
+		CpFET_off
+		sbrc	flags1, POWER_ON
+		BpFET_on
+.endmacro
+
+.macro com6com5
+		; Cp on, Bp off
+		set_comp_phase_b temp1
+		BpFET_off
+		sbrc	flags1, POWER_ON
+		CpFET_on
+.endmacro
+
+.macro com6com1
+		; An off, Cn on
+		set_comp_phase_a temp1
+		cli
+		cbr	flags2, ALL_FETS
+		sbrc	flags1, POWER_ON
+		sbr	flags2, (1<<C_FET)
+		.if COMP_PWM
+		ApFET_off
+		.endif
+		in	temp1, AnFET_port
+		AnFET_off
+		in	temp2, AnFET_port
+		cpse	temp1, temp2
+		CnFET_on
+		sei
+.endmacro
+
+.macro com1com6
+		; An on, Cn off
+		set_comp_phase_c temp1
+		cli
+		cbr	flags2, ALL_FETS
+		sbrc	flags1, POWER_ON
+		sbr	flags2, (1<<A_FET)
+		.if COMP_PWM
+		CpFET_off
+		.endif
+		in	temp1, CnFET_port
+		CnFET_off
+		in	temp2, CnFET_port
+		cpse	temp1, temp2
+		AnFET_on
+		sei
+.endmacro
+
+;-----bko-----------------------------------------------------------------
+; **** running control loop ****
+
+run1:		.if MOTOR_REVERSE
+		sbrs	flags1, REVERSE
+		.else
+		sbrc	flags1, REVERSE
+		.endif
+		rjmp	run_reverse
+
+run_forward:		rcall	wait_for_high
+		com1com2
+		sync_off
+		rcall	wait_for_low
+		com2com3
+		rcall	wait_for_high
+		com3com4
+		rcall	wait_for_low
+		com4com5
+		sync_on
+		rcall	wait_for_high
+		com5com6
+		rcall	wait_for_low
+		com6com1
+		rjmp	run6
+
+run_reverse:	rcall	wait_for_low
+		com1com6
+		sync_on
+		rcall	wait_for_high
+		com6com5
+		rcall	wait_for_low
+		com5com4
+		rcall	wait_for_high
+		com4com3
+		sync_off
+		rcall	wait_for_low
+		com3com2
+		rcall	wait_for_high
+		com2com1
+
+run6:
+		.if MOTOR_BRAKE || LOW_BRAKE
+		lds	temp1, brake_want
+		cpse	temp1, ZH
+		rjmp	run_to_brake
+		.endif
+		.if !MOTOR_BRAKE
+		; If last commutation timed out and power is off, return to init_startup
+		lds	temp1, goodies
+		cpi	temp1, 0
+		sbrs	flags1, POWER_ON
+		breq	run_to_brake
+		.endif
+		; Increment the revolution counter atomically
+		cli
+		lds	temp1, com_count_l
+		lds	temp2, com_count_h
+		adiw	temp1, 1
+		sts	com_count_l, temp1
+		sts	com_count_h, temp2
+		sei
+		movw	YL, sys_control_l
+		adiw	YL, 0			; Test for zero
+		breq	restart_run
+		lds	temp1, goodies
+		cpi	temp1, ENOUGH_GOODIES
+		brcc	run6_2
+		inc	temp1
+		sts	goodies, temp1
+		; Build up sys_control to PWR_MAX_START in steps.
+		adiwx	YL, YH, (POWER_RANGE + 47) / 48
+		ldi2	temp1, temp2, PWR_MAX_START
+		rjmp	run6_3
+
+run6_2:		
+		cbr	flags1, (1<<STARTUP)
+		RED_off
+		; Build up sys_control to MAX_POWER in steps.
+		; If SLOW_THROTTLE is disabled, this only limits
+		; initial start ramp-up; once running, sys_control
+		; will stay at MAX_POWER unless timing is lost.
+		adiwx	YL, YH, (POWER_RANGE + 31) / 32
+		ldi2	temp1, temp2, MAX_POWER
+run6_3:		cp	YL, temp1
+		cpc	YH, temp2
+		brcs	run6_4
+		movw	sys_control_l, temp1
+		rjmp	run1
+run6_4:		movw	sys_control_l, YL
+		rjmp	run1
+
+restart_control:
+		sts	brake_want, ZH
+		rcall	switch_power_off
+run_to_brake:	rjmp	init_startup
+restart_run:	rjmp	start_from_running
+
+;-----bko-----------------------------------------------------------------
+demag_timeout:
+		ldi	ZL, low(pwm_wdr)	; Stop PWM switching
+		; Interrupts will not turn on any FETs now
+		.if COMP_PWM
+		; Turn off complementary PWM if it was on,
+		; but leave on the high side commutation FET.
+		sbrc	flags2, A_FET
+		ApFET_off
+		sbrc	flags2, B_FET
+		BpFET_off
+		sbrc	flags2, C_FET
+		CpFET_off
+		.endif
+		all_nFETs_off temp1
+		RED_on
+		rjmp	wait_commutation
+;-----bko-----------------------------------------------------------------
+wait_timeout:	sbrs	flags1, STARTUP
+		RED_on
+		sts	goodies, ZH
+		sbr	flags1, (1<<STARTUP)
+		rjmp	wait_commutation	; Update timing and duty.
+;-----bko-----------------------------------------------------------------
+wait_for_low:	cbr	flags1, (1<<ACO_EDGE_HIGH)
+		rjmp	wait_for_edge
+;-----bko-----------------------------------------------------------------
+wait_for_high:	sbr	flags1, (1<<ACO_EDGE_HIGH)
+;-----bko-----------------------------------------------------------------
+; Here we wait for the zero-crossing on the undriven phase to synchronize
+; with the motor timing. The voltage of the undriven phase should cross
+; the average of all three phases at half of the way into the 60-degree
+; commutation period.
+;
+; The voltage on the undriven phase is affected by noise from PWM (mutual
+; inductance) and also the demagnetization from the previous commutation
+; step. Demagnetization time is proportional to motor current, and in
+; extreme cases, may take more than 30 degrees to complete. To avoid
+; sensing erroneous early zero-crossings in this case and losing motor
+; synchronization, we check that demagnetization has finished after the
+; minimum blanking period. If we do not see it by the maximum blanking
+; period (about 30 degrees since we commutated last), we turn off power
+; and continue as if the ZC had occurred. PWM is enabled again after the
+; next commutation step.
+;
+; Normally, we wait for the blanking window to pass, look for the
+; comparator to swing as the sign of the zero crossing, wait for the
+; timing delay, and then commutate.
+;
+; Simulations show that the demagnetization period shows up on the phase
+; being monitored by the comparator with no PWM-induced noise. As such,
+; we do not need any filtering. However, it may not show up immediately
+; due to filtering capacitors, hence the initial blind minimum blanking
+; period.
+;
+; Special case: powerskipping during start. The idea here is to learn the
+; timing of a possibly-spinning motor while not driving it, which would
+; induce demagnetization and PWM noise that we cannot ignore until we
+; know the timing. We use twice the timeout that would otherwise bring
+; ZC check count to 0xff. A motor spinning twice the speed or slower will
+; fall through to regular startup with ZC check count at 0xff. This lets
+; us start from braking, RC timeout, or power-up without misaligning.
+;
+wait_for_edge:
+		lds	temp1, powerskip	; Are we trying to track a maybe running motor?
+		subi	temp1, 1
+		brcs	wait_pwm_enable
+		sts	powerskip, temp1
+		sbrs	flags1, STARTUP
+		rjmp	wait_for_blank
+		ldi	YL, byte1(0xff * 0x100)	; Timing is 120 degrees, so wait for
+		ldi	YH, byte2(0xff * 0x100)	; what would be 0xff at 60 degrees
+		mov	temp7, ZH
+		rcall	set_ocr1a_rel
+		ldi	XL, 4
+		rjmp	wait_for_edge1
+wait_pwm_enable:
+		cpi	ZL, low(pwm_wdr)
+		brne	wait_pwm_running
+		ldi	ZL, low(pwm_off)	; Re-enable PWM if disabled for powerskip or sync loss avoidance
+		RED_off				; wait_timeout would have happened if motor not spinning during powerskip
+wait_pwm_running:
+		sbrs	flags1, STARTUP
+		rjmp	wait_for_blank
+		sbrc	flags2, BLIND_WAIT
+		rjmp	wait_blindly
+		start_comp_phase temp1
+.if defined(START_DELAY_US)
+		ldi3	YL, YH, temp4, START_DELAY_US * CPU_MHZ
+		mov	temp7, temp4
+		rcall	set_ocr1a_rel
+		rcall	wait_OCT1_tot
+.endif
+	; Powered startup: skip blanking and commutation wait,
+	; and use a fixed ZC check count until goodies reaches
+	; ENOUGH_GOODIES and we clear the STARTUP flag.
+		lds	YL, wt_OCT1_tot_l	; Load the start commutation
+		lds	YH, wt_OCT1_tot_h	; timeout into YL:YH:temp7 and
+		lds	temp7, wt_OCT1_tot_x	; subtract a "random" amount
+		in	temp4, TCNT0
+		andi	temp4, 0x1f
+		sub	YH, temp4
+		sbc	temp7, ZH
+		brcs	start_timeout1
+		cpiz3	YL, YH, temp7, timeoutMIN * CPU_MHZ, temp4
+		brcc	start_timeout2
+start_timeout1:	ldi3	YL, YH, temp4, timeoutSTART * CPU_MHZ
+		mov	temp7, temp4
+start_timeout2:	sts	wt_OCT1_tot_l, YL
+		sts	wt_OCT1_tot_h, YH
+		sts	wt_OCT1_tot_x, temp7
+		rcall	set_ocr1a_rel
+		ldi	XL, 0xff * CPU_MHZ / 16	; Force full ZC check count
+		rjmp	wait_for_edge1
+
+wait_for_blank:
+		ldi	temp4, 13 * 256 / 120
+		rcall	set_timing_degrees
+		rcall	wait_OCT1_tot		; Wait for the minimum blanking period
+		sbrc	flags2, BLIND_WAIT
+		rjmp	wait_blindly
+		start_comp_phase temp1
+
+		ldi	temp4, (13+29) * 256 / 120
+		rcall	set_timing_degrees	; Set timeout for maximum blanking period
+wait_for_demag:
+		sbrs	flags0, OCT1_PENDING
+		rjmp	demag_timeout
+		sbrc	flags1, EVAL_RC
+		rcall	evaluate_rc
+		in	temp3, ACSR
+		eor	temp3, flags1
+		.if defined(HIGH_SIDE_PWM)
+		sbrs	temp3, ACO		; Check for opposite level (demagnetization)
+		.else
+		sbrc	temp3, ACO		; Check for opposite level (demagnetization)
+		.endif
+		rjmp	wait_for_demag
+
+		rcall	load_timing
+		mov	XL, temp2		; Copy high and check extended byte
+		cpse	temp3, ZH		; to calculate the ZC check count
+		ldi	XL, 0xff
+.if TIMING_MAX * CPU_MHZ / 0x100 < 3
+.error "TIMING_MAX is too fast for at least 3 zero-cross checks -- increase it or adjust this"
+.endif
+		add	YL, temp1
+		adc	YH, temp2
+		adc	temp7, temp3
+		add	YL, temp1
+		adc	YH, temp2
+		adc	temp7, temp3
+		rcall	set_ocr1a_abs		; Set zero-crossing timeout to 240 degrees
+
+wait_for_edge1:	mov	XH, XL
+wait_for_edge2:	sbrs	flags0, OCT1_PENDING
+		rjmp	wait_timeout
+		sbrc	flags1, EVAL_RC
+		rcall	evaluate_rc
+		in	temp3, ACSR
+		eor	temp3, flags1
+		.if defined(HIGH_SIDE_PWM)
+		sbrs	temp3, ACO
+		.else
+		sbrc	temp3, ACO
+		.endif
+		rjmp	wait_for_edge3
+		cp	XL, XH			; Not yet crossed
+		adc	XL, ZH			; Increment if not at zc_filter
+		rjmp	wait_for_edge2
+wait_for_edge3:	dec	XL			; Zero-cross has happened
+		brne	wait_for_edge2		; Check again unless temp1 is zero
+
+wait_commutation:
+		flag_on
+		rcall	update_timing
+		sbrs	flags1, STARTUP
+		rcall	wait_OCT1_tot
+		flag_off
+		sbrc	flags2, READ_ADC
+		rcall	start_adc_read
+		lds	temp1, powerskip
+		cpse	temp1, ZH
+		cbr	flags1, (1<<POWER_ON)	; Disable power when powerskipping
+		cpse	rc_timeout, ZH
+		ret
+		pop	temp1			; Throw away return address
+		pop	temp1
+		rjmp	restart_control		; Restart control immediately on RC timeout
+
+wait_blindly:
+		; Spin for the period measured in previous commutation instead
+		; of using the Analog Comparator because the mux is in use by
+		; the ADC and can't be used for demag or zero-crossing
+		; detection.  Don't call evaluate_rc until we can detect
+		; actual periods in the next cycle.
+		; Note: if this lasts for a few commutations the period will
+		; keep growing a bit each time, we hope it lasts at most one
+		; commutation period.
+		ldi	temp4, 60 * 256 / 120
+		rcall	set_timing_degrees
+		rcall	wait_OCT1_tot
+		rjmp	wait_commutation
+
+; ADC reading happens with the following bits:
+; ADC_VOLTAGE    ADC_CURRENT    RESULT
+;      0              0          temp
+;      1              0          vbat
+;     1/0             1          curr
+start_adc_read:
+		cbr	flags2, (1 << READ_ADC)
+.if !defined(adc_refs)
+.equ adc_refs = (1<<REFS0)	; AVcc (5V)
+.endif
+.if defined(mux_voltage) || defined(mux_temperature)
+		sbr	flags2, (1 << BLIND_WAIT)
+		; Note we can set the mux and start the ADC conversion and
+		; let the main loop call set_comp_phase* because ADMUX is
+		; cached at the start of the conversion
+.if defined(mux_voltage)
+		ldi	temp1, adc_refs + mux_voltage
+.endif
+.if defined(mux_voltage) && defined(mux_temperature)
+		sbrs	flags2, ADC_VOLTAGE
+.endif
+.if defined(mux_temperature)
+		ldi	temp1, adc_refs + mux_temperature
+.endif
+.if (defined(mux_voltage) || defined(mux_temperature)) && defined(mux_current)
+		sbrc  flags2, ADC_CURRENT
+.endif
+.if defined(mux_current)
+		ldi	temp1, adc_refs + mux_current
+.endif
+		out	SFIOR, ZH	; Disable comparator mux and start adc
+		out	ADMUX, temp1
+		ldi	temp1, (1 << ADEN) + (1 << ADSC) + (1 << ADIE) + (1 << ADPS2) + (1 << ADPS1) + (1 << ADPS0)
+		out	ADCSRA, temp1
+.endif
+		ret
+
+adc_int:
+		cbr	flags2, (1 << BLIND_WAIT)
+		comp_init i_temp1
+		sbi	ADMUX, ADLAR
+		in	i_temp1, ADCL
+		in	i_temp2, ADCH
+.if (defined(mux_voltage) || defined(mux_temperature)) && defined(mux_current)
+		sbrc  flags2, ADC_CURRENT
+.endif
+.if defined(mux_current)
+		rjmp save_current
+.endif
+.if defined(mux_voltage) && defined(mux_temperature)
+		sbrs	flags2, ADC_VOLTAGE
+.endif
+.if defined(mux_temperature)
+		rjmp	save_temp
+.endif
+		sts	vbat_l, i_temp1
+		sts	vbat_h, i_temp2
+		cbr	flags2, (1 << ADC_VOLTAGE)
+		reti
+save_temp:	
+		sts	adctemp_l, i_temp1
+		sts	adctemp_h, i_temp2
+		sbr	flags2, (1 << ADC_VOLTAGE)
+		sbr flags2, (1 << ADC_CURRENT)
+		reti
+save_current:
+		sts	adccurr_l, i_temp1
+		sts	adccurr_h, i_temp2
+		cbr	flags2, (1 << ADC_CURRENT)
+		reti
+
+;-----bko-----------------------------------------------------------------
+; init after reset
+
+reset:		clr	r0
 		out	SREG, r0		; Clear interrupts and flags
 
 	; Set up stack
@@ -3247,25 +3574,11 @@ clear_loop1:	cp	ZL, r0
 
 	; Initialize ports
 		outi	PORTB, INIT_PB, temp1
-		outi	DDRB, DIR_PB | (MOTOR_DEBUG<<3) | (MOTOR_DEBUG<<4) | (MOTOR_DEBUG<<5), temp1
+		outi	DDRB,  DIR_PB | (MOTOR_DEBUG<<3) | (MOTOR_DEBUG<<4) | (MOTOR_DEBUG<<5), temp1
 		outi	PORTC, INIT_PC, temp1
 		outi	DDRC, DIR_PC, temp1
 		outi	PORTD, INIT_PD, temp1
 		outi	DDRD, DIR_PD, temp1
-
-	; For PWM-enable drivers, set enable after initializing ports
-		.if defined(ENABLE_ALL_PORT)
-		sbi	ENABLE_ALL_PORT, ENABLE_ALL
-		.endif
-		.if defined(ENABLE_A_PORT)
-		sbi     ENABLE_A_PORT, ENABLE_A
-		.endif
-		.if defined(ENABLE_B_PORT)
-		sbi     ENABLE_B_PORT, ENABLE_B
-		.endif
-		.if defined(ENABLE_C_PORT)
-		sbi     ENABLE_C_PORT, ENABLE_C
-		.endif
 
 		.if DEBUG_TX
 		rcall	init_debug_tx
@@ -3355,742 +3668,6 @@ init_bitbeep2:	sbrs	i_temp1, 0
 		dec	i_temp2
 		brne	init_bitbeep2
 		rjmp	init_bitbeep1		; Loop forever
-
-control_start:
-
-; Check cell count
-.if BLIP_CELL_COUNT
-	.if defined(mux_voltage) && !CELL_COUNT
-		rcall	adc_cell_count
-		cpi	temp1, 5
-		brlo	cell_count_good		; Detection of >=~5 LiPo cells becomes ambiguous based on charge state
-		ldi	temp1, 0
-cell_count_good:
-	.else
-		ldi	temp1, CELL_COUNT
-	.endif
-		mov	YL, temp1		; Beep clobbers temp1-temp5
-		cpi	YL, 0
-		breq	cell_blipper1
-cell_blipper:
-		rcall	wait120ms
-		ldi	temp2, 10		; Short blip (not too long for this)
-		rcall	beep_f4_freq
-		dec	YL
-		brne	cell_blipper
-		rcall	wait120ms
-cell_blipper1:
-
-.endif
-
-control_disarm:
-	; LEDs off while disarmed
-		BLUE_off
-		GRN_off
-		RED_off
-
-		cbr	flags0, (1<<SET_DUTY)	; We need to count a full rc_timeout for safe arming
-		rcall	puls_scale
-
-	; Enable timer interrupts (we only do this late to improve beep quality)
-		ldi	temp1, (1<<TOIE1)+(1<<OCIE1A)+(1<<TOIE2)
-		out	TIFR, temp1		; Clear TOIE1, OCIE1A, and TOIE2 flags
-		out	TIMSK, temp1		; Enable t1ovfl_int, t1oca_int, t2ovfl_int
-
-		.if defined(HK_PROGRAM_CARD)
-	; This program card seems to send data at 1200 baud N81,
-	; Messages start with 0xdd 0xdd, have 7 bytes of config,
-	; and end with 0xde, sent two seconds after power-up or
-	; after any jumper change.
-		.equ	BAUD_RATE = 1200
-		.equ	UBRR_VAL = F_CPU / BAUD_RATE / 16 - 1
-		outi	UBRRH, high(UBRR_VAL), temp1
-		outi	UBRRL, low(UBRR_VAL), temp1
-		sbi	UCSRB, RXEN		; Do programming card rx by polling
-		outi	UCSRC, (1<<URSEL)|(1<<UCSZ1)|(1<<UCSZ0), temp1	; N81
-		.endif
-
-	; Initialize input sources (i2c and/or rc-puls)
-		.if USE_UART && !defined(HK_PROGRAM_CARD)
-		.equ	BAUD_RATE = 38400
-		.equ	UBRR_VAL = F_CPU / BAUD_RATE / 16 - 1
-		outi	UBRRH, high(UBRR_VAL), temp1
-		outi	UBRRL, low(UBRR_VAL), temp1
-		sbi	UCSRB, RXEN		; We don't actually tx
-		outi	UCSRC, (1<<URSEL)|(1<<UCSZ1)|(1<<UCSZ0), temp1	; N81
-		in	temp1, UDR
-		sbi	UCSRA, RXC		; clear flag
-		sbi	UCSRB, RXCIE		; enable reception irq
-		.endif
-		.if USE_I2C
-		rcall	i2c_init
-		.endif
-		.if USE_INT0 || USE_ICP
-		rcp_int_rising_edge temp1
-		rcp_int_enable temp1
-		.endif
-
-	; Wait for one of the input sources to give arming input
-
-i_rc_puls1:	clr	rc_timeout
-		cbr	flags1, (1<<EVAL_RC)+(1<<I2C_MODE)+(1<<UART_MODE)
-		sts	rct_boot, ZH
-		sts	rct_beacon, ZH
-i_rc_puls2:	wdr
-		.if defined(HK_PROGRAM_CARD)
-		.endif
-		sbrc	flags1, EVAL_RC
-		rjmp	i_rc_puls_rx
-		.if BOOT_JUMP
-		rcall	boot_loader_test
-		.endif
-		.if BEACON
-		lds	temp1, rct_beacon
-		cpi	temp1, 120		; Beep every 120 * 16 * 65536us (~8s)
-		brne	i_rc_puls2
-		ldi	temp1, 60
-		sts	rct_beacon, temp1	; Double rate after the first beep
-		rcall	beep_f3			; Beacon
-		.endif
-		rjmp	i_rc_puls2
-i_rc_puls_rx:	rcall	evaluate_rc_init
-		lds	YL, rc_duty_l
-		lds	YH, rc_duty_h
-		adiw	YL, 0			; Test for zero
-		brne	i_rc_puls1
-		ldi	temp1, 10		; wait for this count of receiving power off
-		cp	rc_timeout, temp1
-		brlo	i_rc_puls2
-		.if USE_I2C
-		sbrs	flags1, I2C_MODE
-		out	TWCR, ZH		; Turn off I2C and interrupt
-		.endif
-		.if USE_UART
-		sbrs	flags1, UART_MODE
-		cbi	UCSRB, RXEN		; Turn off receiver
-		.endif
-		.if USE_INT0 || USE_ICP
-		mov	temp1, flags1
-		andi	temp1, (1<<I2C_MODE)+(1<<UART_MODE)
-		breq	i_rc_puls3
-		rcp_int_disable temp1		; Turn off RC pulse interrupt
-i_rc_puls3:
-		.endif
-
-		rcall	beep_f4			; signal: rcpuls ready
-		rcall	beep_f4
-		rcall	beep_f4
-		cbr     flags0, (1<<RCP_ERROR)
-
-	; Fall through to restart_control
-;-----bko-----------------------------------------------------------------
-restart_control:
-		rcall	switch_power_off	; Disables PWM timer, turns off all FETs
-		cbr	flags0, (1<<SET_DUTY)	; Do not yet set duty on input
-		.if BEACON_IDLE
-		sts	idle_beacon, ZH
-		.endif
-		GRN_on				; Green on while armed and idle or braking
-		RED_off
-		BLUE_off
-wait_for_power_on_init:
-		sts	rct_boot, ZH
-		sts	rct_beacon, ZH
-
-		.if MOTOR_BRAKE || LOW_BRAKE
-		lds	temp3, brake_want
-		lds	temp4, brake_active
-		cp	temp3, temp4
-		breq	wait_for_power_on
-
-		rcall	switch_power_off	; Disable any active brake
-		sts	brake_active, temp3	; Set new brake_active to brake_want
-
-		cpi	temp3, 1		; Neutral brake
-		brne	set_brake1
-		ldi	YL, low(1 << BRAKE_SPEED)
-		sts	brake_sub, YL
-		ldi2	YL, YH, BRAKE_POWER
-		rjmp	set_brake_duty
-
-set_brake1:	cpi	temp3, 2		; Thumb brake
-		brne	wait_for_power_on
-		ldi	YL, low(1 << LOW_BRAKE_SPEED)
-		sts	brake_sub, YL
-		ldi2	YL, YH, LOW_BRAKE_POWER
-
-set_brake_duty:	ldi2	temp1, temp2, MAX_POWER
-		sub	temp1, YL		; Calculate OFF duty
-		sbc	temp2, YH
-		rcall	set_new_duty_set
-		ldi	ZL, low(pwm_brake_off)	; Enable PWM brake mode
-		clr	tcnt2h
-		clr	sys_control_l		; Abused as duty update divisor
-		outi	TCCR2, T2CLK, temp1	; Enable PWM, cleared later by switch_power_off
-		.endif
-
-wait_for_power_on:
-		wdr
-		sbrc	flags1, EVAL_RC
-		rjmp	wait_for_power_rx
-		.if BEEP_RCP_ERROR
-		sbrc	flags0, RCP_ERROR	; Check if we've seen bad PWM edges
-		rcall	rcp_error_beep
-		.endif
-		.if BEACON_IDLE
-		lds	temp1, idle_beacon
-		cpi	temp1, 240		; Beep after ~4 minutes
-		brcs	no_idle_beep
-		ldi	temp1, 238
-		sts	idle_beacon, temp1
-		rcall	switch_power_off	; Brake may have been on
-		rcall	wait30ms
-		rcall	beep_f4
-no_idle_beep:
-		.endif
-		tst	rc_timeout
-		brne	wait_for_power_on	; Tight loop unless rc_timeout is zero
-		.if BOOT_JUMP
-		rcall	boot_loader_test
-		.endif
-		lds	temp1, rct_beacon
-		cpi	temp1, 30		; Disarm after ~2 seconds of no signal
-		brne	wait_for_power_on
-		rcall	switch_power_off	; Brake may have been on
-		rcall	wait30ms
-		rcall	beep_f3			; Play beeps for signal lost, disarming
-		rcall	beep_f2
-		rjmp	control_disarm		; Do not start motor until neutral signal received once again
-
-wait_for_power_rx:
-		.if USE_I2C
-		sbrc	flags0, EEPROM_RESET
-		rcall	eeprom_reset_block
-		sbrc	flags0, EEPROM_WRITE
-		rcall	eeprom_write_block
-		.endif
-		rcall	evaluate_rc		; Only get rc_duty, don't set duty
-		tst	rc_timeout		; If not a valid signal, loop
-		breq	wait_for_power_on	; while increasing boot/beacon timers
-		adiw	YL, 0
-		brne	start_from_running	; If power requested, start; otherwise,
-		rjmp	wait_for_power_on_init	; loop while resetting boot/beacon timers
-
-start_from_running:
-		rcall	switch_power_off
-		comp_init temp1			; init comparator
-		RED_off
-		GRN_off
-		BLUE_on
-
-		ldi2	YL, YH, PWR_MIN_START	; Start with limited power to reduce the chance that we
-		movw	sys_control_l, YL	; align to a timing harmonic
-
-		sbr	flags0, (1<<SET_DUTY)
-		; Set STARTUP flag and call update_timing which will set
-		; last_tcnt1 and set the duty (limited by STARTUP) and
-		; set POWER_ON.
-		rcall	wait_timeout_init
-		sts	start_delay, ZH
-		sts	start_modulate, ZH
-		sts	start_fail, ZH
-		ldi	temp1, RCP_TOT		; Start with a short timeout to stop quickly
-		mov	rc_timeout, temp1	; if we see no further pulses after the first.
-		ldi	temp1, 6		; Do not enable FETs during first cycle to
-		sts	powerskip, temp1	; see if motor is running, and align to it.
-		ldi	temp1, ENOUGH_GOODIES	; If we can follow without a timeout, do not
-		sts	goodies, temp1		; continue in startup mode (long ZC filtering).
-		outi	TCCR2, T2CLK, temp1	; Enable PWM (ZL has been set to pwm_wdr)
-
-;-----bko-----------------------------------------------------------------
-; *** commutation utilities ***
-
-.macro com1com2
-		; Bp off, Ap on
-		set_comp_phase_b temp1
-		COMMUTATE_B_off
-		sbrc	flags1, POWER_ON
-		COMMUTATE_A_on
-.endmacro
-
-.macro com2com1
-		; Bp on, Ap off
-		set_comp_phase_a temp1
-		COMMUTATE_A_off
-		sbrc	flags1, POWER_ON
-		COMMUTATE_B_on
-.endmacro
-
-.macro com2com3
-		; Cn off, Bn on
-		set_comp_phase_c temp1
-		cli
-		cbr	flags2, ALL_FETS
-		sbr	flags2, (1<<B_FET)
-		PWM_FOCUS_C_off
-		PWM_C_clear
-		PWM_B_copy
-		PWM_FOCUS_B_on
-		sei
-.endmacro
-
-.macro com3com2
-		; Cn on, Bn off
-		set_comp_phase_b temp1
-		cli
-		cbr	flags2, ALL_FETS
-		sbr	flags2, (1<<C_FET)
-		PWM_FOCUS_B_off
-		PWM_B_clear
-		PWM_C_copy
-		PWM_FOCUS_C_on
-		sei
-.endmacro
-
-.macro com3com4
-		; Ap off, Cp on
-		set_comp_phase_a temp1
-		COMMUTATE_A_off
-		sbrc	flags1, POWER_ON
-		COMMUTATE_C_on
-.endmacro
-
-.macro com4com3
-		; Ap on, Cp off
-		set_comp_phase_c temp1
-		COMMUTATE_C_off
-		sbrc	flags1, POWER_ON
-		COMMUTATE_A_on
-.endmacro
-
-.macro com4com5
-		; Bn off, An on
-		set_comp_phase_b temp1
-		cli
-		cbr	flags2, ALL_FETS
-		sbr	flags2, (1<<A_FET)
-		PWM_FOCUS_B_off
-		PWM_B_clear
-		PWM_A_copy
-		PWM_FOCUS_A_on
-		sei
-.endmacro
-
-.macro com5com4
-		; Bn on, An off
-		set_comp_phase_a temp1
-		cli
-		cbr	flags2, ALL_FETS
-		sbr	flags2, (1<<B_FET)
-		PWM_FOCUS_A_off
-		PWM_A_clear
-		PWM_B_copy
-		PWM_FOCUS_B_on
-		sei
-.endmacro
-
-.macro com5com6
-		; Cp off, Bp on
-		set_comp_phase_c temp1
-		COMMUTATE_C_off
-		sbrc	flags1, POWER_ON
-		COMMUTATE_B_on
-.endmacro
-
-.macro com6com5
-		; Cp on, Bp off
-		set_comp_phase_b temp1
-		COMMUTATE_B_off
-		sbrc	flags1, POWER_ON
-		COMMUTATE_C_on
-.endmacro
-
-.macro com6com1
-		; An off, Cn on
-		set_comp_phase_a temp1
-		cli
-		cbr	flags2, ALL_FETS
-		sbr	flags2, (1<<C_FET)
-		PWM_FOCUS_A_off
-		PWM_A_clear
-		PWM_C_copy
-		PWM_FOCUS_C_on
-		sei
-.endmacro
-
-.macro com1com6
-		; An on, Cn off
-		set_comp_phase_c temp1
-		cli
-		cbr	flags2, ALL_FETS
-		sbr	flags2, (1<<A_FET)
-		PWM_FOCUS_C_off
-		PWM_C_clear
-		PWM_A_copy
-		PWM_FOCUS_A_on
-		sei
-.endmacro
-
-;-----bko-----------------------------------------------------------------
-; **** running control loop ****
-
-run1:		.if MOTOR_REVERSE
-		sbrs	flags1, REVERSE
-		.else
-		sbrc	flags1, REVERSE
-		.endif
-		rjmp	run_reverse
-
-run_forward:
-		rcall	wait_for_high
-		com1com2
-		sync_off
-		rcall	wait_for_low
-		com2com3
-		rcall	wait_for_high
-		com3com4
-		rcall	wait_for_low
-		com4com5
-		sync_on
-		rcall	wait_for_high
-		com5com6
-		rcall	wait_for_low
-		com6com1
-		rjmp	run6
-
-run_reverse:
-		rcall	wait_for_low
-		com1com6
-		sync_on
-		rcall	wait_for_high
-		com6com5
-		rcall	wait_for_low
-		com5com4
-		rcall	wait_for_high
-		com4com3
-		sync_off
-		rcall	wait_for_low
-		com3com2
-		rcall	wait_for_high
-		com2com1
-
-run6:
-		.if MOTOR_BRAKE || LOW_BRAKE
-		lds	temp1, brake_want
-		cpse	temp1, ZH
-		rjmp	run_to_brake
-		.endif
-		lds	temp1, goodies
-		.if !MOTOR_BRAKE
-		; If last commutation timed out and power is off, return to restart_control
-		cpi	temp1, 0
-		sbrs	flags1, POWER_ON
-		breq	run_to_brake
-		.endif
-		movw	YL, sys_control_l	; Each time TIMING_MAX is hit, sys_control is lsr'd
-		adiw	YL, 0			; If zero, try starting over (with powerskipping)
-		breq	restart_run
-		cpi	temp1, ENOUGH_GOODIES
-		brcc	run6_2
-		inc	temp1
-		sts	goodies, temp1
-		; Build up sys_control to PWR_MAX_START in steps.
-		adiwx	YL, YH, (POWER_RANGE + 47) / 48
-		ldi2	temp1, temp2, PWR_MAX_START
-		; If we've been trying to start for a while,
-		; modulate power to reduce heating.
-		lds	temp3, start_fail
-		lds	temp4, start_modulate
-		subi	temp4, -START_MOD_INC
-		sts	start_modulate, temp4
-		brne	run6_1
-		; If we've been trying for a long while, give up.
-		subi	temp3, -START_FAIL_INC
-		breq	start_failed
-		sts	start_fail, temp3
-run6_1:		; Allow first loop at full power, then modulate.
-		cpi	temp3, START_FAIL_INC
-		brcs	run6_3
-		cpi	temp4, START_MOD_LIMIT
-		brcs	run6_3
-		ldi2	temp1, temp2, PWR_COOL_START
-		rjmp	run6_3
-
-run6_2:
-		cbr	flags1, (1<<STARTUP)
-		sts	start_fail, ZH
-		sts	start_modulate, ZH
-		RED_off
-		; Build up sys_control to MAX_POWER in steps.
-		; If SLOW_THROTTLE is disabled, this only limits
-		; initial start ramp-up; once running, sys_control
-		; will stay at MAX_POWER unless timing is lost.
-		adiwx	YL, YH, (POWER_RANGE + 31) / 32
-		ldi2	temp1, temp2, MAX_POWER
-run6_3:		cp	YL, temp1
-		cpc	YH, temp2
-		brcs	run6_4
-		movw	sys_control_l, temp1
-		rjmp	run1
-run6_4:		movw	sys_control_l, YL
-		rjmp	run1
-
-run_to_brake:	rjmp	restart_control
-restart_run:	rjmp	start_from_running
-
-;-----bko-----------------------------------------------------------------
-; If we were unable to start for a long time, just sit and beep unless
-; input goes back to no power. This might help us get found if crashed.
-start_failed:
-		rcall	switch_power_off
-		cbr	flags0, (1<<SET_DUTY)
-start_fail_beep:
-		rcall	wait240ms
-		rcall	wait240ms
-		rcall	beep_f4			; "Start failed" beacon
-		rcall	evaluate_rc		; Returns rc_duty when !SET_DUTY
-		adiw	YL, 0			; Test for zero
-		brne	start_fail_beep
-		rjmp	control_disarm
-
-;-----bko-----------------------------------------------------------------
-demag_timeout:
-		ldi	ZL, low(pwm_wdr)	; Stop PWM switching
-		; Interrupts will not turn on any FETs now
-		.if COMP_PWM && CPWM_SOFT
-		; Turn off complementary PWM if it was on,
-		; but leave on the high side commutation FET.
-		sbrc	flags2, A_FET
-		PWM_COMP_A_off
-		sbrc	flags2, B_FET
-		PWM_COMP_B_off
-		sbrc	flags2, C_FET
-		PWM_COMP_C_off
-		.elif COMP_PWM && !CPWM_SOFT
-		sbrc	flags2, A_FET
-		PWM_FOCUS_A_off
-		sbrc	flags2, B_FET
-		PWM_FOCUS_B_off
-		sbrc	flags2, C_FET
-		PWM_FOCUS_C_off
-		.endif
-		PWM_ALL_off temp1
-		RED_on
-		; Skip power for the next commutation. Note that this
-		; won't decrease a non-zero powerskip because demag
-		; checking is skipped when powerskip is non-zero.
-		ldi	temp1, 1
-		sts	powerskip, temp1
-		rjmp	wait_commutation
-;-----bko-----------------------------------------------------------------
-wait_timeout:
-		sbrc	flags1, STARTUP
-		rjmp	wait_timeout_start
-		cpi	XH, ZC_CHECK_FAST
-		brcs	wait_timeout_run
-		ldi	XH, ZC_CHECK_FAST - 1	; Limit back-tracking
-		cp	XL, XH
-		brcc	wait_timeout1
-		mov	XL, XH			; Clip current distance from crossing
-wait_timeout1:	rcall	set_ocr1a_zct		; Set zero-crossing timeout
-		rjmp	wait_for_edge2
-wait_timeout_run:
-		RED_on				; Turn on red LED
-wait_timeout_start:
-		sts	goodies, ZH		; Clear good commutation count
-		lds	temp4, start_delay
-		subi	temp4, -START_DELAY_INC	; Increase start (blanking) delay,
-		sbrc	flags1, STARTUP		; unless we were running
-		sts	start_delay, temp4
-wait_timeout_init:
-		sbr	flags1, (1<<STARTUP)	; Leave running mode
-		rjmp	wait_commutation	; Update timing and duty.
-;-----bko-----------------------------------------------------------------
-wait_for_low:	cbr	flags1, (1<<ACO_EDGE_HIGH)
-		rjmp	wait_for_edge
-;-----bko-----------------------------------------------------------------
-wait_for_high:	sbr	flags1, (1<<ACO_EDGE_HIGH)
-;-----bko-----------------------------------------------------------------
-; Here we wait for the zero-crossing on the undriven phase to synchronize
-; with the motor timing. The voltage of the undriven phase should cross
-; the average of all three phases at half of the way into the 60-degree
-; commutation period.
-;
-; The voltage on the undriven phase is affected by noise from PWM (mutual
-; inductance) and also the demagnetization from the previous commutation
-; step. Demagnetization time is proportional to motor current, and in
-; extreme cases, may take more than 30 degrees to complete. To avoid
-; sensing erroneous early zero-crossings in this case and losing motor
-; synchronization, we check that demagnetization has finished after the
-; minimum blanking period. If we do not see it by the maximum blanking
-; period (about 30 degrees since we commutated last), we turn off power
-; and continue as if the ZC had occurred. PWM is enabled again after the
-; next commutation step.
-;
-; Normally, we wait for the blanking window to pass, look for the
-; comparator to swing as the sign of the zero crossing, wait for the
-; timing delay, and then commutate.
-;
-; Simulations show that the demagnetization period shows up on the phase
-; being monitored by the comparator with no PWM-induced noise. As such,
-; we do not need any filtering. However, it may not show up immediately
-; due to filtering capacitors, hence the initial blind minimum blanking
-; period.
-;
-; Special case: powerskipping during start. The idea here is to learn the
-; timing of a possibly-spinning motor while not driving it, which would
-; induce demagnetization and PWM noise that we cannot ignore until we
-; know the timing. We use twice the timeout that would otherwise bring
-; ZC check count to 0xff. A motor spinning twice the speed or slower will
-; fall through to regular startup with ZC check count at 0xff. This lets
-; us start from braking, RC timeout, or power-up without misaligning.
-;
-wait_for_edge:
-		lds	temp1, powerskip	; Are we trying to track a maybe running motor?
-		subi	temp1, 1
-		brcs	wait_pwm_enable
-		sts	powerskip, temp1
-		sbrs	flags1, STARTUP
-		rjmp	wait_for_edge0
-		ldi	YL, byte1(0xff * 0x100)	; Timing is 120 degrees, so wait for
-		ldi	YH, byte2(0xff * 0x100)	; what would be 0xff at 60 degrees
-		mov	temp7, ZH
-		rcall	set_ocr1a_rel
-		ldi	XL, ZC_CHECK_MIN	; There shouldn't be much noise with no power
-		rjmp	wait_for_edge1
-wait_pwm_enable:
-		cpi	ZL, low(pwm_wdr)
-		brne	wait_pwm_running
-		ldi	ZL, low(pwm_off)	; Re-enable PWM if disabled for powerskip or sync loss avoidance
-		RED_off				; wait_timeout would have happened if motor not spinning during powerskip
-wait_pwm_running:
-		sbrc	flags1, STARTUP
-		rjmp	wait_startup
-		ldi	temp4, 13 * 256 / 120
-		rcall	set_timing_degrees
-		rcall	wait_OCT1_tot		; Wait for the minimum blanking period
-
-		ldi	temp4, 42 * 256 / 120
-		rcall	set_timing_degrees	; Set timeout for maximum blanking period
-wait_for_demag:
-		sbrs	flags0, OCT1_PENDING
-		rjmp	demag_timeout
-		sbrc	flags1, EVAL_RC
-		rcall	evaluate_rc
-		in	temp3, ACSR
-		eor	temp3, flags1
-		.if HIGH_SIDE_PWM
-		sbrs	temp3, ACO		; Check for opposite level (demagnetization)
-		.else
-		sbrc	temp3, ACO		; Check for opposite level (demagnetization)
-		.endif
-		rjmp	wait_for_demag
-wait_for_edge0:
-		lds	XL, timing_h		; Copy high and extended byte
-		lds	XH, timing_x		; to calculate the ZC check count
-		lsr	XH			; Quarter to obtain timing / 1024
-		ror	XL
-		lsr	XH
-		ror	XL
-		cpi	XL, ZC_CHECK_MIN
-		cpc	XH, ZH
-		brcs	wait_for_edge_fast_min
-		breq	wait_for_edge_fast
-.if ZC_CHECK_MAX < 256
-		cpi	XL, ZC_CHECK_MAX
-.else
-		cpi	XL, 255
-.endif
-		cpc	XH, ZH
-		brcs	wait_for_edge_below_max
-		ldi	XL, ZC_CHECK_MAX	; Limit to ZC_CHECK_MAX
-wait_for_edge_below_max:
-		cpi	XL, ZC_CHECK_FAST	; For faster timing, set normal ZC timeout
-		brcs	wait_for_edge_fast
-		ldi	temp4, 24 * 256 / 120	; With slower (longer) timing, set timer
-		rcall	set_timing_degrees	; for limited backtracing
-		rjmp	wait_for_edge1
-wait_for_edge_fast_min:
-		ldi	XL, ZC_CHECK_MIN
-wait_for_edge_fast:
-		rcall	set_ocr1a_zct		; Set zero-crossing timeout
-
-wait_for_edge1:	mov	XH, XL
-wait_for_edge2:	sbrs	flags0, OCT1_PENDING
-		rjmp	wait_timeout
-		sbrc	flags1, EVAL_RC
-		rcall	evaluate_rc
-		in	temp3, ACSR
-.if 0
-		; Visualize comparator output on the flag pin
-		sbrc	temp3, ACO
-		flag_on
-		nop
-		flag_off
-		sbrs	temp3, ACO
-		flag_on
-.endif
-		eor	temp3, flags1
-		.if HIGH_SIDE_PWM
-		sbrs	temp3, ACO
-		.else
-		sbrc	temp3, ACO
-		.endif
-		rjmp	wait_for_edge3
-		cp	XL, XH			; Not yet crossed
-		adc	XL, ZH			; Increment if not at zc_filter
-		rjmp	wait_for_edge2
-wait_for_edge3:	dec	XL			; Zero-cross has happened
-		brne	wait_for_edge2		; Check again unless temp1 is zero
-
-wait_commutation:
-		flag_on
-		rcall	update_timing
-		sbrs	flags1, STARTUP
-		rcall	wait_OCT1_tot
-		flag_off
-		lds	temp1, powerskip
-		cpse	temp1, ZH
-		cbr	flags1, (1<<POWER_ON)	; Disable power when powerskipping
-		cpse	rc_timeout, ZH
-		ret
-		pop	temp1			; Throw away return address
-		pop	temp1
-		rjmp	restart_control		; Restart control immediately on RC timeout
-
-; When starting, we have no idea what sort of motor may be connected,
-; or how much time it will take for the previous commutation current
-; to stop flowing. If the motor is not spinning and the sensing while
-; powerskipping fails, we apply power and check for back-EMF after an
-; increasing delay, building up further if the motor remains stalled.
-; This will stretch out short commutations caused by the comparator
-; sitting low or high when inputs are below the minimum offset.
-wait_startup:
-		ldi3	YL, YH, temp4, START_DELAY_US * CPU_MHZ
-		mov	temp7, temp4
-		lds	temp1, goodies
-		cpi	temp1, 2		; After some good commutations,
-		brcc	wait_startup1		; skip additional delay injection
-		lds	temp4, start_delay
-		ldi3	temp1, temp2, temp3, START_DSTEP_US * CPU_MHZ * 0x100
-		rcall	update_timing_add_degrees	; Add temp4 (start_delay) START_DSTEPs of wait
-wait_startup1:	rcall	set_ocr1a_rel
-		rcall	wait_OCT1_tot
-		ldi3	YL, YH, temp4, TIMEOUT_START * CPU_MHZ
-		mov	temp7, temp4
-		rcall	set_ocr1a_rel
-; Powered startup: Use a fixed (long) ZC check count until goodies reaches
-; ENOUGH_GOODIES and the STARTUP flag is cleared.
-		ldi	XL, 0xff * CPU_MHZ / 16
-		rjmp	wait_for_edge1
-
-;-----bko-----------------------------------------------------------------
-; init after reset
-
-; The reset vector points here, right at the end of the main program.
-; This nop-sleds to the boot loader if the program flash was incomplete.
-reset:
-		rjmp	main
 
 .if BOOT_LOADER
 .include "boot.inc"

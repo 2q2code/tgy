@@ -5,7 +5,8 @@
 ;********************************************
 
 .equ	F_CPU		= 16000000
-.equ	USE_INT0	= 2
+.equ	USE_INT0	= 0
+.equ	USE_INT0S	= 2
 .equ	USE_I2C		= 0
 .equ	USE_UART	= 0
 .equ	USE_ICP		= 0
@@ -35,8 +36,8 @@
 ;*********************
 ; PORT C definitions *
 ;*********************
-; CHECK THIS
-;.equ	mux_voltage	= 7	; ADC7 voltage input (470k from Vbat, 47k to gnd, 10.10V in -> .918V at ADC7)
+.equ	mux_voltage	= 7	; ADC7 voltage input (47k from Vbat, 2.0k to gnd, 10.10V in -> .406V at ADC7)
+				; 47k from Vbat, 4.7k to gnd on the 30A MultiStars
 ;.equ			= 6	; ADC6
 ;.equ			= 5	; ADC5
 .equ	mux_c		= 4	; ADC4 phase input
@@ -45,8 +46,11 @@
 ;.equ			= 1	; ADC1
 ;.equ			= 0	; ADC0
 
+; CHECK THIS
 .equ	O_POWER		= 470
 .equ	O_GROUND	= 47
+
+.equ	adc_refs	= (1<<REFS1)+(1<<REFS0)	; Only 2.56V seems to work
 
 .equ	INIT_PC		= 0
 .equ	DIR_PC		= 0
@@ -65,3 +69,12 @@
 
 .equ	INIT_PB		= 0
 .equ	DIR_PB		= 0
+
+.MACRO RED_on
+.ENDMACRO
+.MACRO RED_off
+.ENDMACRO
+.MACRO GRN_on
+.ENDMACRO
+.MACRO GRN_off
+.ENDMACRO
