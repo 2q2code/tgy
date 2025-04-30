@@ -144,8 +144,12 @@
 
 .equ	CPU_MHZ		= F_CPU / 1000000
 
+.if !defined(BOOT_LOADER)
 .equ	BOOT_LOADER	= 1	; Include Turnigy USB linker STK500v2 boot loader on PWM input pin
+.endif
+.if !defined(BOOT_JUMP)
 .equ	BOOT_JUMP	= 1	; Jump to any boot loader when PWM input stays high
+.endif
 .equ	BOOT_START	= THIRDBOOTSTART
 
 .if !defined(COMP_PWM)

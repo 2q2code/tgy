@@ -40,6 +40,9 @@ program_usbasp_%: %.hex
 program_avrisp2_%: %.hex
 	avrdude -c avrisp2 -p m8 -U flash:w:$<:i
 
+program_buspirate_%: %.hex
+	avrdude -c buspirate -P /dev/ttyUSB0 -p m8 -U flash:w:$<:i
+
 program_dragon_%: %.hex
 	avrdude -c dragon_isp -p m8 -P usb -U flash:w:$<:i
 
