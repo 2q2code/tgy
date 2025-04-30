@@ -3,12 +3,16 @@
 ;***********************************************************
 
 .set	F_CPU		= 16000000
-.equ	USE_INT0	= 1
-.equ	USE_I2C		= 0
+.equ	USE_INT0	= 0
+.equ	USE_I2C		= 1
 .equ	USE_UART	= 0
 .equ	USE_ICP		= 0
+.equ  SIMPLE_I2C  = 1
 
-.equ  CHECK_HARDWARE    = 1;
+.equ  CHECK_HARDWARE    = 1
+.equ  BEACON = 0 ; Don't beep - it's kinda pointless - we're using I2C...
+.equ  STARTUP_BEEPS = 0 ; Don't do startup beeps at start time
+.equ  STARTUP_LEDS = 1 ; Do show some sign of life on startup
 
 .equ    DEAD_LOW_NS     = 450	; May work on some boards, but be careful!
 .equ    DEAD_HIGH_NS    = 8000
@@ -21,7 +25,7 @@
 .equ	ApFET		= 5	;o
 .equ	BpFET		= 4	;o
 .equ	CpFET		= 3	;o
-.equ	rcp_in		= 2	;i r/c pulse input
+;.equ	rcp_in		= 2	;i r/c pulse input
 
 .equ	INIT_PD		= 0
 .equ	DIR_PD		= (1<<ApFET)+(1<<BpFET)+(1<<CpFET)
@@ -35,10 +39,10 @@
 ;*********************
 ;.equ			= 7	; ADC7
 ;.equ			= 6	; ADC6
-.equ	mux_a		= 5	; ADC5 phase input
-.equ	mux_b		= 4	; ADC4 phase input
-;.equ			= 3	; ADC3
-;.equ			= 2	; ADC2 (plush has something on here)
+.equ	i2c_clk		= 5	; ADC5/SCL
+.equ	i2c_data	= 4	; ADC4/SDA
+.equ	mux_a		= 3	; ADC3 phase input (originally on PC5, ADC5)
+.equ	mux_b		= 2	; ADC2 phase input (originally on PC4, ADC4)
 ;.equ	mux_temperature	= 1	; ADC1 temperature input
 .equ	mux_voltage	= 0	; ADC0 voltage input (47k from Vbat, 4k7 to gnd, 10.10V -> .918V at ADC0)
 
@@ -51,8 +55,8 @@
 ;*********************
 ; PORT B definitions *
 ;*********************
-.equ	green_led		= 7
-.equ	red_led		  = 6
+.equ	red_led		  = 7
+.equ	green_led		= 6
 ;.equ			= 5	(sck stk200 interface)
 ;.equ			= 4	(miso stk200 interface)
 ;.equ			= 3	(mosi stk200 interface)

@@ -170,7 +170,15 @@
 .equ	RC_PULS_REVERSE	= 1	; Enable RC-car style forward/reverse throttle
 .equ	RC_CALIBRATION	= 0	; Support run-time calibration of min/max pulse lengths
 .equ	SLOW_THROTTLE	= 1	; Limit maximum throttle jump to try to prevent overcurrent
+.if !defined(BEACON)
 .equ	BEACON		= 1	; Beep periodically when RC signal is lost
+.endif
+.if !defined(STARTUP_BEEPS)
+.equ  STARTUP_BEEPS = 1 ; Three beeps at startup time
+.endif
+.if !defined(STARTUP_LEDS)
+.equ  STARTUP_LEDS = 1 ; Three flashes at startup time
+.endif
 .if !defined(CHECK_HARDWARE)
 .equ	CHECK_HARDWARE	= 0	; Check for correct pin configuration, sense inputs, and functioning MOSFETs
 .endif
@@ -1385,6 +1393,7 @@ i2c_rx_blccsum:	in	i_temp1, TWDR		; We can't do anything with the checksum, so j
 	;  0x08  (read-only)   Current high
 	;  0x09  (read-only)   Current low
 	;  0x0A  (read-only)   Identification (0xab)
+  ;  0x0B  (write-only)  Perform startup beeps (only if idle) - not yet implemented
 	; Address gets auto-incremented.
 	; TODO: expose O_GROUND, O_POWER, etc.?
 		in	i_sreg, SREG
@@ -1506,6 +1515,30 @@ urxc_set_exit:	sts	motor_count, i_temp2
 urxc_exit:	out	SREG, i_sreg
 		reti
 	.endif
+;-----led-beeps-----------------------------------------------------------
+; beep the red led
+led_f1:
+    RED_on
+    rcall wait120ms
+    RED_off
+    rcall wait120ms
+    ret
+; beep the green led
+led_f2:
+    GRN_on
+    rcall wait120ms
+    GRN_off
+    rcall wait120ms
+    ret
+; beep both the red and the green led
+led_f3:
+    RED_on
+    GRN_on
+    rcall wait240ms
+    RED_off
+    rcall wait120ms
+    GRN_off
+    ret
 ;-----bko-----------------------------------------------------------------
 ; beeper: timer0 is set to 1�s/count
 beep_f1:	ldi	temp2, 80
@@ -3630,9 +3663,16 @@ clear_loop1:	cp	ZL, r0
 		bst	temp7, PORF		; Power-on reset
 		cpse	temp7, ZH		; or zero
 		brtc	init_no_porf
+    .if STARTUP_BEEPS
 		rcall	beep_f1			; Usual startup beeps
 		rcall	beep_f2
 		rcall	beep_f3
+    .endif
+    .if STARTUP_LEDS
+    rcall led_f1
+    rcall led_f2
+    rcall led_f3
+    .endif
 		rjmp	control_start
 init_no_porf:
 		sbrs	temp7, BORF		; Brown-out reset
