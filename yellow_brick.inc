@@ -65,7 +65,7 @@
 .equ	CnFET		= 0
 
 .equ	INIT_PB		= 0
-.equ	DIR_PB		= (1<<AnFET)+(1<<BnFET)+(1<<CnFET)
+.equ	DIR_PB		= (1<<red_led)+(1<<green_led)+(1<<AnFET)+(1<<BnFET)+(1<<CnFET)
 
 .equ	AnFET_port	= PORTB
 .equ	BnFET_port	= PORTB
