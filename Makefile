@@ -31,25 +31,25 @@ binary_zip: $(ALL_TARGETS)
 	git archive -9 -o "$$TARGET" HEAD && \
 	zip -9 "$$TARGET" $(ALL_TARGETS) && ls -l "$$TARGET"
 
-program_tgy_%: %.hex
+flash_tgy_%: %.hex
 	avrdude -c stk500v2 -b 9600 -P /dev/ttyUSB0 -u -p m8 -U flash:w:$<:i
 
-program_usbasp_%: %.hex
+flash_usbasp_%: %.hex
 	avrdude -c usbasp -B.5 -p m8 -U flash:w:$<:i
 
-program_avrisp2_%: %.hex
+flash_avrisp2_%: %.hex
 	avrdude -c avrisp2 -p m8 -U flash:w:$<:i
 
-program_buspirate_%: %.hex
-	avrdude -c buspirate -P /dev/ttyUSB0 -p m8 -U flash:w:$<:i
+flash_buspirate_%: %.hex
+	avrdude -v -c buspirate -P /dev/buspirate -p m8 -U flash:w:$<:i
 
-program_dragon_%: %.hex
+flash_dragon_%: %.hex
 	avrdude -c dragon_isp -p m8 -P usb -U flash:w:$<:i
 
-program_dapa_%: %.hex
+flash_dapa_%: %.hex
 	avrdude -c dapa -p m8 -U flash:w:$<:i
 
-program_uisp_%: %.hex
+flash_uisp_%: %.hex
 	uisp -dprog=dapa --erase --upload --verify -v if=$<
 
 bootload_usbasp:

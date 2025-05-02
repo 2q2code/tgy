@@ -10,11 +10,9 @@
 .equ  SIMPLE_I2C  = 1
 
 .equ  CHECK_HARDWARE    = 1
-.equ  BEACON = 0 ; Don't beep - it's kinda pointless - we're using I2C...
-.equ  STARTUP_BEEPS = 0 ; Don't do startup beeps at start time
-.equ  STARTUP_LEDS = 1 ; Do show some sign of life on startup
 .equ  BOOT_LOADER = 0 ; Don't include the bootloader
 .equ  BOOT_JUMP = 0 ; Don't look for other bootloaders
+.equ  SILENT_OPERATION = 1 ; beeps are replaced with LED flash codes (I2C can still request beeps)
 
 .equ    DEAD_LOW_NS     = 450	; May work on some boards, but be careful!
 .equ    DEAD_HIGH_NS    = 8000
@@ -27,7 +25,7 @@
 .equ	ApFET		= 5	;o
 .equ	BpFET		= 4	;o
 .equ	CpFET		= 3	;o
-;.equ	rcp_in		= 2	;i r/c pulse input
+.equ	rcp_in		= 2	;i r/c pulse input (unused)
 
 .equ	INIT_PD		= 0
 .equ	DIR_PD		= (1<<ApFET)+(1<<BpFET)+(1<<CpFET)

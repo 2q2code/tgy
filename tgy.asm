@@ -137,7 +137,7 @@
 #elif defined(tgy_esc)
 #include "tgy.inc"		; TowerPro/Turnigy Basic/Plush "type 2" (INT0 PWM)
 #elif defined(yellow_brick_esc)
-#include "yellow_brick.inc"		; tgy compatible unbranded board
+#include "yellow_brick.inc"		; tgy compatible unbranded board, custom modifications, I2C
 #else
 #error "Unrecognized board type."
 #endif
@@ -151,6 +151,10 @@
 .equ	BOOT_JUMP	= 1	; Jump to any boot loader when PWM input stays high
 .endif
 .equ	BOOT_START	= THIRDBOOTSTART
+
+.if !defined(SILENT_OPERATION)
+.equ SILENT_OPERATION = 0 ; beeps are replaced with LED flash code
+.endif
 
 .if !defined(COMP_PWM)
 .equ	COMP_PWM	= 0	; During PWM off, switch high side on (unsafe on some boards!)
@@ -176,12 +180,6 @@
 .equ	SLOW_THROTTLE	= 1	; Limit maximum throttle jump to try to prevent overcurrent
 .if !defined(BEACON)
 .equ	BEACON		= 1	; Beep periodically when RC signal is lost
-.endif
-.if !defined(STARTUP_BEEPS)
-.equ  STARTUP_BEEPS = 1 ; Three beeps at startup time
-.endif
-.if !defined(STARTUP_LEDS)
-.equ  STARTUP_LEDS = 1 ; Three flashes at startup time
 .endif
 .if !defined(CHECK_HARDWARE)
 .equ	CHECK_HARDWARE	= 0	; Check for correct pin configuration, sense inputs, and functioning MOSFETs
@@ -1519,6 +1517,49 @@ urxc_set_exit:	sts	motor_count, i_temp2
 urxc_exit:	out	SREG, i_sreg
 		reti
 	.endif
+;-----beep-central-station------------------------------------------------
+beep_f1:
+    .if SILENT_OPERATION
+      rjmp led_f1
+    .else
+      rjmp real_beep_f1
+    .endif
+    ret
+beep_f2:
+    .if SILENT_OPERATION
+      rjmp led_f2
+    .else
+      rjmp real_beep_f2
+    .endif
+    ret
+beep_f3:
+    .if SILENT_OPERATION
+      rjmp led_f3
+    .else
+      rjmp real_beep_f3
+    .endif
+    ret
+beep_f4:
+    .if SILENT_OPERATION
+      rjmp led_f4
+    .else
+      rjmp real_beep_f4
+    .endif
+    ret
+beep_f4_freq:
+    .if SILENT_OPERATION
+      rjmp led_f4
+    .else
+      rjmp real_beep_f4_freq
+    .endif
+    ret
+beep_f4_fets:
+    .if SILENT_OPERATION
+      rjmp led_f4
+    .else
+      rjmp real_beep_f4_fets
+    .endif
+    ret
 ;-----led-beeps-----------------------------------------------------------
 ; beep the red led
 led_f1:
@@ -1538,14 +1579,34 @@ led_f2:
 led_f3:
     RED_on
     GRN_on
-    rcall wait240ms
-    RED_off
     rcall wait120ms
+    RED_off
     GRN_off
+    rcall wait120ms
+    ret
+; beep the red led with half green led duration
+led_f4:
+    RED_on
+    rcall wait60ms
+    GRN_on
+    rcall wait60ms
+    RED_off
+    GRN_off
+    rcall wait120ms
+    ret
+; beep the green led with half red led duration
+led_f5:
+    GRN_on
+    rcall wait60ms
+    RED_on
+    rcall wait60ms
+    RED_off
+    GRN_off
+    rcall wait120ms
     ret
 ;-----bko-----------------------------------------------------------------
 ; beeper: timer0 is set to 1�s/count
-beep_f1:	ldi	temp2, 80
+real_beep_f1:	ldi	temp2, 80
 		ldi	temp4, 200
 		RED_on
 beep_f1_on:	BpFET_on
@@ -1555,7 +1616,7 @@ beep_f1_on:	BpFET_on
 		RED_off
 		ret
 
-beep_f2:	ldi	temp2, 100
+real_beep_f2:	ldi	temp2, 100
 		ldi	temp4, 180
 		GRN_on
 beep_f2_on:	CpFET_on
@@ -1565,7 +1626,7 @@ beep_f2_on:	CpFET_on
 		GRN_off
 		ret
 
-beep_f3:	ldi	temp2, 120
+real_beep_f3:	ldi	temp2, 120
 		ldi	temp4, 160
 beep_f3_on:	ApFET_on
 		CnFET_on
@@ -1573,9 +1634,9 @@ beep_f3_on:	ApFET_on
 		brne	beep_f3_on
 		ret
 
-beep_f4:	ldi	temp2, 140
-beep_f4_freq:	ldi	temp4, 140
-beep_f4_fets:	RED_on
+real_beep_f4:	ldi	temp2, 140
+real_beep_f4_freq:	ldi	temp4, 140
+real_beep_f4_fets:	RED_on
 		GRN_on
 beep_f4_on:	CpFET_on
 		AnFET_on
@@ -3667,16 +3728,9 @@ clear_loop1:	cp	ZL, r0
 		bst	temp7, PORF		; Power-on reset
 		cpse	temp7, ZH		; or zero
 		brtc	init_no_porf
-    .if STARTUP_BEEPS
 		rcall	beep_f1			; Usual startup beeps
 		rcall	beep_f2
 		rcall	beep_f3
-    .endif
-    .if STARTUP_LEDS
-    rcall led_f1
-    rcall led_f2
-    rcall led_f3
-    .endif
 		rjmp	control_start
 init_no_porf:
 		sbrs	temp7, BORF		; Brown-out reset
