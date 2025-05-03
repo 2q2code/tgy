@@ -156,6 +156,10 @@
 .equ SILENT_OPERATION = 0 ; beeps are replaced with LED flash code
 .endif
 
+.if !defined(RUNTIME_OPTIONS)
+.equ RUNTIME_OPTIONS = 0 ; rtos are disabled by default
+.endif
+
 .if !defined(COMP_PWM)
 .equ	COMP_PWM	= 0	; During PWM off, switch high side on (unsafe on some boards!)
 .endif
@@ -260,6 +264,11 @@
 .set	DEBUG_TX	= 0		; Output debugging on UART TX pin
 .set	ADC_READ_NEEDED	= 0		; Reading from ADCs
 
+; Runtime options bit index and mask etc
+.if RUNTIME_OPTIONS
+.equ RTO_MASK = (1<<opt0)+(1<<opt1)+(1<<opt2) ; only interested in pins assigned (PORTB only atm) to options
+.equ RTO_SILENT_OPERATION = 0 ; first bit of three at boot is silent operation setting
+.endif
 ;**** **** **** **** ****
 ; Register Definitions
 .def	temp5		= r0		; aux temporary (L) (limited operations)
@@ -398,6 +407,9 @@ blc_bitconfig:	.byte	1	; BLConfig bitconfig (1 == MOTOR_REVERSE)
 blc_checksum:	.byte	1	; BLConfig checksum (0xaa + above bytes)
 .endif
 eeprom_end:	.byte	1
+.if RUNTIME_OPTIONS
+rto_flags: .byte 1 ; runtime option flags
+.endif
 ;-----bko-----------------------------------------------------------------
 ;**** **** **** **** ****
 .cseg
@@ -1519,45 +1531,93 @@ urxc_exit:	out	SREG, i_sreg
 	.endif
 ;-----beep-central-station------------------------------------------------
 beep_f1:
-    .if SILENT_OPERATION
+    .if RUNTIME_OPTIONS
+      ; if silent we skip the beep
+      lds temp2, rto_flags
+      sbrs temp2, RTO_SILENT_OPERATION ; skip the real beep if silent is on
+      rjmp real_beep_f1
       rjmp led_f1
     .else
-      rjmp real_beep_f1
+      .if SILENT_OPERATION
+        rjmp led_f1
+      .else
+        rjmp real_beep_f1
+      .endif
     .endif
     ret
 beep_f2:
-    .if SILENT_OPERATION
+    .if RUNTIME_OPTIONS
+      ; if silent we skip the beep
+      lds temp2, rto_flags
+      sbrs temp2, RTO_SILENT_OPERATION ; skip the real beep if silent is on
+      rjmp real_beep_f2
       rjmp led_f2
     .else
-      rjmp real_beep_f2
+      .if SILENT_OPERATION
+        rjmp led_f2
+      .else
+        rjmp real_beep_f2
+      .endif
     .endif
     ret
 beep_f3:
-    .if SILENT_OPERATION
+    .if RUNTIME_OPTIONS
+      ; if silent we skip the beep
+      lds temp2, rto_flags
+      sbrs temp2, RTO_SILENT_OPERATION ; skip the real beep if silent is on
+      rjmp real_beep_f3
       rjmp led_f3
     .else
-      rjmp real_beep_f3
+      .if SILENT_OPERATION
+        rjmp led_f3
+      .else
+        rjmp real_beep_f3
+      .endif
     .endif
     ret
 beep_f4:
-    .if SILENT_OPERATION
+    .if RUNTIME_OPTIONS
+      ; if silent we skip the beep
+      lds temp2, rto_flags
+      sbrs temp2, RTO_SILENT_OPERATION ; skip the real beep if silent is on
+      rjmp real_beep_f4
       rjmp led_f4
     .else
-      rjmp real_beep_f4
+      .if SILENT_OPERATION
+        rjmp led_f4
+      .else
+        rjmp real_beep_f4
+      .endif
     .endif
     ret
 beep_f4_freq:
-    .if SILENT_OPERATION
+    .if RUNTIME_OPTIONS
+      ; if silent we skip the beep
+      lds temp2, rto_flags
+      sbrs temp2, RTO_SILENT_OPERATION ; skip the real beep if silent is on
+      rjmp real_beep_f4_freq
       rjmp led_f4
     .else
-      rjmp real_beep_f4_freq
+      .if SILENT_OPERATION
+        rjmp led_f4
+      .else
+        rjmp real_beep_f4_freq
+      .endif
     .endif
     ret
 beep_f4_fets:
-    .if SILENT_OPERATION
+    .if RUNTIME_OPTIONS
+      ; if silent we skip the beep
+      lds temp2, rto_flags
+      sbrs temp2, RTO_SILENT_OPERATION ; skip the real beep if silent is on
+      rjmp real_beep_f4_fets
       rjmp led_f4
     .else
-      rjmp real_beep_f4_fets
+      .if SILENT_OPERATION
+        rjmp led_f4
+      .else
+        rjmp real_beep_f4_fets
+      .endif
     .endif
     ret
 ;-----led-beeps-----------------------------------------------------------
@@ -1685,6 +1745,18 @@ wait3:		in	temp1, TIFR
 		brne	wait1
 wait_ret:	ret
 
+;-- Runtime (SPI) Option Pins ----
+; When not being used for SPI, we can use these pins for whatever
+; so we turn them into option pins, read at boot, with maybe more purpose later
+.if RUNTIME_OPTIONS
+configure_runtime_options:
+    ; load default settings
+    ldi temp2, (SILENT_OPERATION << RTO_SILENT_OPERATION) ; set silent operation value from compiled in default
+    sbis PINB, opt0 ; skip the next instruction if option0 is 1 (default state, pulled up)
+    andi temp2, ~(SILENT_OPERATION << RTO_SILENT_OPERATION) ; toggle the usual
+    sts rto_flags, temp2 ; store into rto_flags for later reference
+    ret
+.endif
 ;-- EEPROM functions -----------------------------------------------------
 ; Interrupts must be disabled to avoid Z conflicts and content changes.
 eeprom_check_reset:
@@ -3705,6 +3777,11 @@ clear_loop1:	cp	ZL, r0
 		.if DEBUG_ADC_DUMP
 		rcall	adc_input_dump
 		.endif
+
+  ; Read option bitfield from MOSI, MISO, SCK (opt0,opt1,opt2)
+    .if RUNTIME_OPTIONS
+    rcall configure_runtime_options
+    .endif
 
 	; Read EEPROM block to RAM
 		rcall	eeprom_read_block	; Also calls osccal_set
