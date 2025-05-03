@@ -1,10 +1,5 @@
 # Status Byte
 
-Adding a status byte to the SIMPLE_I2C protocol.
-Step 1: collect all errors in the code. DONE
-Step 2: collect all states in code. DONE
-Step 3: select only what we need to survive (v 1.0)
-
 ## Errors
 
 ### Check hardware
@@ -58,13 +53,9 @@ Step 3: select only what we need to survive (v 1.0)
 - wait for blank
 - wait for demag
 - wait blindly
-- 
 
-# Other TODOs
+# AVR TODOs
 
-- add 1 byte for custom settings to EEPROM including SILENT_OPERATION flag to EEPROM for early read
-  i.e. silent operation is as per compiled default unless EEPROM flag is set
-- add i2c command for manipulating the above
-- keep in mind that MOSI, MISO, and SCK are connected, so we can communicate a bitfield of 3 for settings
-  instead of using EEPROM, which is much easier and slightly more sustainable long term (limited EEPROM writes)
-- look into the DEAD_LOW_NS and high to see if adjusting for the board/motor may help spin up
+- this status byte thing so we have feedback on state remotely (later - we now have sound when we want it - which is enough to install it and move on to the rest first)
+- look into the DEAD_LOW_NS and high to see if adjusting for the board/motor may help spin up (later)
+
